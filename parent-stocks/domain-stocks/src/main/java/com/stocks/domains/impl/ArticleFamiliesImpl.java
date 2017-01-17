@@ -117,7 +117,12 @@ public class ArticleFamiliesImpl implements ArticleFamilies {
 	}
 
 	@Override
-	public boolean exists(Object id) throws IOException {
-		return ds.exists(id);
+	public boolean contains(ArticleFamily item) throws IOException {
+		return ds.exists(item.id());
+	}
+
+	@Override
+	public ArticleFamily build(Object id) {
+		return new ArticleFamilyImpl(base, id);
 	}
 }

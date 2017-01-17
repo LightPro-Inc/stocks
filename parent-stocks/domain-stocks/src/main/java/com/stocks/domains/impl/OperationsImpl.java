@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -116,13 +115,18 @@ public class OperationsImpl implements Operations {
 	}
 
 	@Override
-	public boolean exists(Object id) throws IOException {
+	public boolean contains(Operation item) throws IOException {
 		try {
-			get(UUIDConvert.fromObject(id));
+			get(item.id());
 		} catch (IOException e) {
 			return false;
 		}
 		
 		return true;
+	}
+
+	@Override
+	public Operation build(Object id) {
+		return new OperationImpl(base, id);
 	}
 }

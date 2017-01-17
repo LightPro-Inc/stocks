@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -104,9 +103,9 @@ public class OperationMovements implements StockMovements {
 	}
 
 	@Override
-	public boolean exists(Object id) throws IOException {
+	public boolean contains(StockMovement item) throws IOException {
 		try {
-			get(UUIDConvert.fromObject(id));
+			get(item.id());
 		} catch (Exception e) {
 			return false;
 		}
@@ -119,5 +118,10 @@ public class OperationMovements implements StockMovements {
 		for (StockMovement sm : all()) {
 			delete(sm);			
 		}
+	}
+
+	@Override
+	public StockMovement build(Object id) {
+		return new StockMovementImpl(base, id);
 	}
 }

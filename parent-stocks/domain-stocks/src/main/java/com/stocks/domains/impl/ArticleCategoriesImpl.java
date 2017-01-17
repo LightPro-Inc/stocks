@@ -114,7 +114,12 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 	}
 
 	@Override
-	public boolean exists(Object id) throws IOException {
-		return ds.exists(id);
+	public boolean contains(ArticleCategory item) throws IOException {
+		return ds.exists(item.id());
+	}
+
+	@Override
+	public ArticleCategory build(Object id) {
+		return new ArticleCategoryImpl(base, id);
 	}
 }

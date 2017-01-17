@@ -96,14 +96,6 @@ public class ArticlesImpl implements Articles {
             throw new IllegalArgumentException("Invalid name : it can't be empty!");
         }
 		
-		if (internalReference == null || internalReference.isEmpty()) {
-            throw new IllegalArgumentException("Invalid internal reference : it can't be empty!");
-        }
-		
-		if (barCode == null || barCode.isEmpty()) {
-            throw new IllegalArgumentException("Invalid barcode : it can't be empty!");
-        }
-		
 		if (familyId == null) {
             throw new IllegalArgumentException("Invalid article family : it can't be empty!");
         }
@@ -129,7 +121,12 @@ public class ArticlesImpl implements Articles {
 	}
 
 	@Override
-	public boolean exists(Object id) throws IOException {
-		return ds.exists(id);
+	public boolean contains(Article item) throws IOException {
+		return ds.exists(item.id());
+	}
+
+	@Override
+	public Article build(Object id) {
+		return new ArticleImpl(base, id);
 	}
 }

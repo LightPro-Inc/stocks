@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -104,9 +103,9 @@ public class WarehouseOperationTypes implements OperationTypes {
 	}
 
 	@Override
-	public boolean exists(Object id) throws IOException {
+	public boolean contains(OperationType item) throws IOException {
 		try {
-			get(UUIDConvert.fromObject(id));
+			get(item.id());
 		} catch (IOException e) {
 			return false;
 		}
@@ -114,4 +113,8 @@ public class WarehouseOperationTypes implements OperationTypes {
 		return true;
 	}
 
+	@Override
+	public OperationType build(Object id) {
+		return new OperationTypeImpl(base, id);
+	}
 }

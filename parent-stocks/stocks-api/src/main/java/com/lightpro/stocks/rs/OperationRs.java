@@ -79,15 +79,15 @@ public class OperationRs extends StocksBaseRs {
 						for (StockMovementEdited sm : cmd.movements()) {
 							Article  article = stocks().articles().get(sm.articleId());
 							
-							if(operation.movements().exists(sm.id())){
-								StockMovement smv = operation.movements().get(sm.id());
-								
+							StockMovement smv = operation.movements().build(sm.id());
+							
+							if(smv.isPresent()){
 								if(sm.deleted())
 								{
 									operation.movements().delete(smv);
 								}else{
 									smv.update(sm.quantity(), article);	
-								}																			
+								}					
 							}else{
 								if(!sm.deleted())
 									operation.addMovement(sm.quantity(), article);

@@ -73,14 +73,6 @@ public class ArticleImpl implements Article {
             throw new IllegalArgumentException("Invalid name : it can't be empty!");
         }
 		
-		if (internalReference == null || internalReference.isEmpty()) {
-            throw new IllegalArgumentException("Invalid internal reference : it can't be empty!");
-        }
-		
-		if (barCode == null || barCode.isEmpty()) {
-            throw new IllegalArgumentException("Invalid barcode : it can't be empty!");
-        }
-		
 		if (familyId == null) {
             throw new IllegalArgumentException("Invalid article family : it can't be empty!");
         }
