@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface StockMovement extends Recordable<UUID> {
+public interface StockMovement extends Recordable<UUID, StockMovement> {
 	int quantity() throws IOException;
 	Article article() throws IOException;
 	Operation operation() throws IOException;	

@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.infrastructure.core.Recordable;
 import com.securities.api.MesureUnit;
 
-public interface ArticleCategory extends Recordable<UUID> {
+public interface ArticleCategory extends Recordable<UUID, ArticleCategory> {
 	String name() throws IOException;
 	MesureUnit mesureUnit() throws IOException;
 	List<ArticleFamily> families() throws IOException;

@@ -101,4 +101,14 @@ public class ArticleCategoryImpl implements ArticleCategory {
 	public boolean isPresent() throws IOException {
 		return base.domainsStore(dm).exists(id);
 	}
+	
+	@Override
+	public boolean isEqual(ArticleCategory item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(ArticleCategory item) throws IOException {
+		return !isEqual(item);
+	}
 }

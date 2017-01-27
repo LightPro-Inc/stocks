@@ -3,7 +3,6 @@ package com.stocks.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
@@ -78,7 +77,7 @@ public class OperationTypesImpl implements OperationTypes {
 	}
 
 	@Override
-	public OperationType get(UUID id) throws IOException {
+	public OperationType get(Object id) throws IOException {
 		if(!ds.exists(id))
 			throw new NotFoundException("Le type d'opération n'a pas été trouvé !");
 		

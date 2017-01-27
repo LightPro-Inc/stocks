@@ -3,7 +3,6 @@ package com.stocks.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
@@ -82,7 +81,7 @@ public class WarehouseOperationTypes implements OperationTypes {
 	}
 
 	@Override
-	public OperationType get(UUID id) throws IOException {
+	public OperationType get(Object id) throws IOException {
 		boolean exists = ds.exists(id);
 		OperationType item = null;
 		

@@ -3,7 +3,6 @@ package com.stocks.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
@@ -99,7 +98,7 @@ public class OperationsImpl implements Operations {
 	}
 
 	@Override
-	public Operation get(UUID id) throws IOException {
+	public Operation get(Object id) throws IOException {
 		Operation op = new OperationImpl(this.base, id);
 		
 		if(!op.isPresent() || (op.isPresent() && statut != OperationStatut.NONE && op.statut() != statut))

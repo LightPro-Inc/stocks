@@ -1,12 +1,10 @@
 package com.stocks.domains.api;
 
 import java.io.IOException;
-import java.util.UUID;
 
-import com.infrastructure.core.Queryable;
+import com.infrastructure.core.AdvancedQueryable;
+import com.infrastructure.core.Updatable;
 
-public interface Warehouses extends Queryable<Warehouse> {
-	Warehouse get(UUID id) throws IOException;
+public interface Warehouses extends AdvancedQueryable<Warehouse>, Updatable<Warehouse> {
 	Warehouse add(String name, String shortName) throws IOException;
-	void delete(Warehouse wh) throws IOException;
 }

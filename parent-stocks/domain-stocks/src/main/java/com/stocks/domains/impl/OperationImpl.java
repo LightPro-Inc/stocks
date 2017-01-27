@@ -177,4 +177,14 @@ public class OperationImpl implements Operation {
 	public boolean delayed() throws IOException {
 		return ds.get(dm.delayedKey());
 	}
+	
+	@Override
+	public boolean isEqual(Operation item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Operation item) throws IOException {
+		return !isEqual(item);
+	}
 }

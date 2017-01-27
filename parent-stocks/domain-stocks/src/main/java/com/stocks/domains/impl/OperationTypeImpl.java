@@ -166,4 +166,14 @@ public class OperationTypeImpl implements OperationType {
 	public Operations operationsDone() {
 		return new OperationsByType(base, OperationStatut.VALIDE, this.id);
 	}
+	
+	@Override
+	public boolean isEqual(OperationType item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(OperationType item) throws IOException {
+		return !isEqual(item);
+	}
 }

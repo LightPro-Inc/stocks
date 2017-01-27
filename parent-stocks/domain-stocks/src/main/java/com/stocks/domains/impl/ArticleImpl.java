@@ -117,4 +117,14 @@ public class ArticleImpl implements Article {
 	public boolean isPresent() throws IOException {
 		return base.domainsStore(dm).exists(id);
 	}
+	
+	@Override
+	public boolean isEqual(Article item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Article item) throws IOException {
+		return !isEqual(item);
+	}
 }

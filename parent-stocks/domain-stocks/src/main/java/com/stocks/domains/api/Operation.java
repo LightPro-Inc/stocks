@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface Operation extends Recordable<UUID> {
+public interface Operation extends Recordable<UUID, Operation> {
 	
 	String reference() throws IOException;	
 	OperationType type() throws IOException;

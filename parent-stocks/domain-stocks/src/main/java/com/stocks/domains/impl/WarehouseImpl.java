@@ -169,4 +169,14 @@ public class WarehouseImpl implements Warehouse {
 		
 		return stocks;
 	}
+	
+	@Override
+	public boolean isEqual(Warehouse item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Warehouse item) throws IOException {
+		return !isEqual(item);
+	}
 }

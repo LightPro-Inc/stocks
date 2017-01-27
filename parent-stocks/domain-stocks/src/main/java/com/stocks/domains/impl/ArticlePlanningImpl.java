@@ -100,4 +100,14 @@ public class ArticlePlanningImpl implements ArticlePlanning {
 	public boolean isPresent() throws IOException {
 		return base.domainsStore(dm).exists(id);
 	}
+	
+	@Override
+	public boolean isEqual(ArticlePlanning item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(ArticlePlanning item) throws IOException {
+		return !isEqual(item);
+	}
 }

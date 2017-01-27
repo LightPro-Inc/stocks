@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface ArticlePlanning extends Recordable<UUID> {
+public interface ArticlePlanning extends Recordable<UUID, ArticlePlanning> {
 	Location location() throws IOException;
 	Article article() throws IOException;
 	int maximumStock() throws IOException;

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface Location extends Recordable<UUID> {
+public interface Location extends Recordable<UUID, Location> {
 	LocationType type() throws IOException;
 	String name() throws IOException;
 	String shortName() throws IOException;

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface Warehouse extends Recordable<UUID> {
+public interface Warehouse extends Recordable<UUID, Warehouse> {
 	String name() throws IOException;
 	String shortName() throws IOException;
 	

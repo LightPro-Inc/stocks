@@ -31,7 +31,7 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 	}
 
 	@Override
-	public ArticleCategory get(UUID id) throws IOException {
+	public ArticleCategory get(Object id) throws IOException {
 		if(!ds.exists(id))
 			throw new NotFoundException("La catégorie d'article n'a pas été trouvée !");
 		

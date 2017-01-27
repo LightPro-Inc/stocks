@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.infrastructure.core.Recordable;
 
-public interface ArticleFamily extends Recordable<UUID> {
+public interface ArticleFamily extends Recordable<UUID, ArticleFamily> {
 	String name() throws IOException;
 	String description() throws IOException;
 	ArticleCategory category() throws IOException;

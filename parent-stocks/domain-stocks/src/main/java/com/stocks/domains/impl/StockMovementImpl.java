@@ -99,4 +99,14 @@ public class StockMovementImpl implements StockMovement {
 			stock.updateQuantity(stock.quantity() + this.quantity());
 		}
 	}
+	
+	@Override
+	public boolean isEqual(StockMovement item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(StockMovement item) throws IOException {
+		return !isEqual(item);
+	}
 }

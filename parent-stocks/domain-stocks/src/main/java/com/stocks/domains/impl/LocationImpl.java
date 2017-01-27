@@ -103,4 +103,14 @@ public class LocationImpl implements Location {
 	public boolean isInternal() throws IOException {
 		return warehouse().id() != null;
 	}
+	
+	@Override
+	public boolean isEqual(Location item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(Location item) throws IOException {
+		return !isEqual(item);
+	}
 }

@@ -107,4 +107,14 @@ public class ArticleFamilyImpl implements ArticleFamily {
 	public boolean isPresent() throws IOException {
 		return base.domainsStore(dm).exists(id);
 	}	
+	
+	@Override
+	public boolean isEqual(ArticleFamily item) throws IOException {
+		return this.id().equals(item.id());
+	}
+
+	@Override
+	public boolean isNotEqual(ArticleFamily item) throws IOException {
+		return !isEqual(item);
+	}
 }

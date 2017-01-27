@@ -3,10 +3,9 @@ package com.stocks.domains.api;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.infrastructure.core.Queryable;
+import com.infrastructure.core.AdvancedQueryable;
+import com.infrastructure.core.Updatable;
 
-public interface ArticleFamilies extends Queryable<ArticleFamily> {
-	ArticleFamily get(UUID id) throws IOException;
+public interface ArticleFamilies extends AdvancedQueryable<ArticleFamily>, Updatable<ArticleFamily> {
 	ArticleFamily add(String name, String description, UUID categoryId) throws IOException;	
-	void delete(ArticleFamily item) throws IOException;	
 }

@@ -82,7 +82,7 @@ public class ArticlesImpl implements Articles {
 	}
 
 	@Override
-	public Article get(UUID id) throws IOException {
+	public Article get(Object id) throws IOException {
 		if(!ds.exists(id))
 			throw new NotFoundException("L'article n'a pas été trouvé !");
 		
