@@ -40,8 +40,13 @@ public class StockMovementImpl implements StockMovement {
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -101,12 +106,12 @@ public class StockMovementImpl implements StockMovement {
 	}
 	
 	@Override
-	public boolean isEqual(StockMovement item) throws IOException {
+	public boolean isEqual(StockMovement item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(StockMovement item) throws IOException {
+	public boolean isNotEqual(StockMovement item) {
 		return !isEqual(item);
 	}
 }

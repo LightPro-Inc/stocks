@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainsStore;
 import com.stocks.domains.api.ArticlePlanning;
@@ -46,7 +47,7 @@ public class ArticlePlanningsImpl implements ArticlePlannings {
 		}else
 			id = results.get(0);
 		
-		return new ArticlePlanningImpl(this.base, id);
+		return new ArticlePlanningImpl(this.base, UUIDConvert.fromObject(id));
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.Horodate;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -28,11 +27,11 @@ import com.stocks.domains.api.Operation.OperationStatut;
 public class OperationTypeImpl implements OperationType {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient OperationTypeMetadata dm;
 	private final transient DomainStore ds;
 	
-	public OperationTypeImpl(final Base base, final Object id){
+	public OperationTypeImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = dm();
@@ -41,7 +40,7 @@ public class OperationTypeImpl implements OperationType {
 	
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
@@ -153,8 +152,13 @@ public class OperationTypeImpl implements OperationType {
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -168,12 +172,12 @@ public class OperationTypeImpl implements OperationType {
 	}
 	
 	@Override
-	public boolean isEqual(OperationType item) throws IOException {
+	public boolean isEqual(OperationType item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(OperationType item) throws IOException {
+	public boolean isNotEqual(OperationType item) {
 		return !isEqual(item);
 	}
 }

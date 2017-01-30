@@ -6,6 +6,6 @@ import java.util.UUID;
 import com.infrastructure.core.AdvancedQueryable;
 import com.infrastructure.core.Updatable;
 
-public interface ArticleFamilies extends AdvancedQueryable<ArticleFamily>, Updatable<ArticleFamily> {
+public interface ArticleFamilies extends AdvancedQueryable<ArticleFamily, UUID>, Updatable<ArticleFamily> {
 	ArticleFamily add(String name, String description, UUID categoryId) throws IOException;	
 }

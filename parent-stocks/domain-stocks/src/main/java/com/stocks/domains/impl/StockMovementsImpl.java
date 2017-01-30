@@ -3,6 +3,7 @@ package com.stocks.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
@@ -82,7 +83,7 @@ public class StockMovementsImpl implements StockMovements {
 	}
 
 	@Override
-	public StockMovement get(Object id) throws IOException {
+	public StockMovement get(UUID id) throws IOException {
 		StockMovement op = new StockMovementImpl(this.base, id);
 		
 		if(!op.isPresent())
@@ -97,7 +98,7 @@ public class StockMovementsImpl implements StockMovements {
 	}
 
 	@Override
-	public boolean contains(StockMovement item) throws IOException {
+	public boolean contains(StockMovement item) {
 		try {
 			get(item.id());
 		} catch (IOException e) {
@@ -115,7 +116,7 @@ public class StockMovementsImpl implements StockMovements {
 	}
 
 	@Override
-	public StockMovement build(Object id) {
+	public StockMovement build(UUID id) {
 		return new StockMovementImpl(base, id);
 	}
 

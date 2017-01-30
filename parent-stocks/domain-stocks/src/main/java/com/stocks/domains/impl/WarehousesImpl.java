@@ -31,7 +31,7 @@ public class WarehousesImpl implements Warehouses {
 	}
 	
 	@Override
-	public Warehouse get(Object id) throws IOException {
+	public Warehouse get(UUID id) throws IOException {
 		if(!ds.exists(id))
 			throw new NotFoundException("L'entrepôt n'a pas été trouvé !");
 		
@@ -115,7 +115,7 @@ public class WarehousesImpl implements Warehouses {
 	}
 
 	@Override
-	public boolean contains(Warehouse item) throws IOException {
+	public boolean contains(Warehouse item) {
 		try {
 			get(item.id());
 		} catch (IOException e) {
@@ -126,7 +126,7 @@ public class WarehousesImpl implements Warehouses {
 	}
 
 	@Override
-	public Warehouse build(Object id) {
+	public Warehouse build(UUID id) {
 		return new WarehouseImpl(base, id);
 	}
 }

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -62,7 +63,7 @@ public class ArticlesImpl implements Articles {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new ArticleImpl(this.base, domainStore.key())); 
+			values.add(new ArticleImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;	
@@ -82,7 +83,7 @@ public class ArticlesImpl implements Articles {
 	}
 
 	@Override
-	public Article get(Object id) throws IOException {
+	public Article get(UUID id) throws IOException {
 		if(!ds.exists(id))
 			throw new NotFoundException("L'article n'a pas été trouvé !");
 		
@@ -121,12 +122,17 @@ public class ArticlesImpl implements Articles {
 	}
 
 	@Override
-	public boolean contains(Article item) throws IOException {
-		return ds.exists(item.id());
+	public boolean contains(Article item) {
+		try {
+			return ds.exists(item.id());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
-	public Article build(Object id) {
+	public Article build(UUID id) {
 		return new ArticleImpl(base, id);
 	}
 }

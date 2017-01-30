@@ -3,9 +3,11 @@ package com.stocks.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -61,7 +63,7 @@ public class WarehouseOperationTypes implements OperationTypes {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new OperationTypeImpl(this.base, domainStore.key())); 
+			values.add(new OperationTypeImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;
@@ -81,7 +83,7 @@ public class WarehouseOperationTypes implements OperationTypes {
 	}
 
 	@Override
-	public OperationType get(Object id) throws IOException {
+	public OperationType get(UUID id) throws IOException {
 		boolean exists = ds.exists(id);
 		OperationType item = null;
 		
@@ -102,7 +104,7 @@ public class WarehouseOperationTypes implements OperationTypes {
 	}
 
 	@Override
-	public boolean contains(OperationType item) throws IOException {
+	public boolean contains(OperationType item) {
 		try {
 			get(item.id());
 		} catch (IOException e) {
@@ -113,7 +115,7 @@ public class WarehouseOperationTypes implements OperationTypes {
 	}
 
 	@Override
-	public OperationType build(Object id) {
+	public OperationType build(UUID id) {
 		return new OperationTypeImpl(base, id);
 	}
 }

@@ -22,11 +22,11 @@ import com.stocks.domains.api.ArticleMetadata;
 public class ArticleFamilyImpl implements ArticleFamily {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient ArticleFamilyMetadata dm;
 	private final transient DomainStore ds;
 	
-	public ArticleFamilyImpl(final Base base, final Object id){
+	public ArticleFamilyImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = dm();
@@ -35,7 +35,7 @@ public class ArticleFamilyImpl implements ArticleFamily {
 	
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class ArticleFamilyImpl implements ArticleFamily {
 
 	@Override
 	public ArticleCategory category() throws IOException {
-		Object categoryId = ds.get(dm.categoryIdKey());
+		UUID categoryId = ds.get(dm.categoryIdKey());
 		
 		return new ArticleCategoryImpl(this.base, categoryId);
 	}
@@ -88,7 +88,7 @@ public class ArticleFamilyImpl implements ArticleFamily {
 		
 		List<DomainStore> results = base.domainsStore(dm).findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new ArticleImpl(this.base, domainStore.key())); 
+			values.add(new ArticleImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;		
@@ -104,17 +104,22 @@ public class ArticleFamilyImpl implements ArticleFamily {
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}	
 	
 	@Override
-	public boolean isEqual(ArticleFamily item) throws IOException {
+	public boolean isEqual(ArticleFamily item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(ArticleFamily item) throws IOException {
+	public boolean isNotEqual(ArticleFamily item) {
 		return !isEqual(item);
 	}
 }

@@ -23,7 +23,7 @@ public class ArticleStocksImpl implements ArticleStocks {
 	private final transient Article article;
 	private final transient DomainsStore ds;
 	
-	public ArticleStocksImpl(final Base base, final Object articleId){
+	public ArticleStocksImpl(final Base base, final UUID articleId){
 		this.base = base;
 		this.article = new ArticleImpl(this.base, articleId);
 		this.dm = ArticleStockImpl.dm();

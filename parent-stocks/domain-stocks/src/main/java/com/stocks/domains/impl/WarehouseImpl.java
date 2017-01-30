@@ -155,8 +155,13 @@ public class WarehouseImpl implements Warehouse {
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -171,12 +176,12 @@ public class WarehouseImpl implements Warehouse {
 	}
 	
 	@Override
-	public boolean isEqual(Warehouse item) throws IOException {
+	public boolean isEqual(Warehouse item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(Warehouse item) throws IOException {
+	public boolean isNotEqual(Warehouse item) {
 		return !isEqual(item);
 	}
 }

@@ -3,9 +3,11 @@ package com.stocks.domains.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -70,7 +72,7 @@ public class OperationsImpl implements Operations {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new OperationImpl(this.base, domainStore.key())); 
+			values.add(new OperationImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;
@@ -98,7 +100,7 @@ public class OperationsImpl implements Operations {
 	}
 
 	@Override
-	public Operation get(Object id) throws IOException {
+	public Operation get(UUID id) throws IOException {
 		Operation op = new OperationImpl(this.base, id);
 		
 		if(!op.isPresent() || (op.isPresent() && statut != OperationStatut.NONE && op.statut() != statut))
@@ -114,18 +116,17 @@ public class OperationsImpl implements Operations {
 	}
 
 	@Override
-	public boolean contains(Operation item) throws IOException {
+	public boolean contains(Operation item) {
 		try {
-			get(item.id());
+			return ds.exists(item.id());
 		} catch (IOException e) {
-			return false;
+			e.printStackTrace();
 		}
-		
-		return true;
+		return false;
 	}
 
 	@Override
-	public Operation build(Object id) {
-		return new OperationImpl(base, id);
+	public Operation build(UUID id) {
+		return new OperationImpl(this.base, id);
 	}
 }

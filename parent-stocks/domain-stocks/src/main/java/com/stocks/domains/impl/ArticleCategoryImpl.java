@@ -23,11 +23,11 @@ import com.stocks.domains.api.ArticleCategoryMetadata;
 public class ArticleCategoryImpl implements ArticleCategory {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient ArticleCategoryMetadata dm;
 	private final transient DomainStore ds;
 	
-	public ArticleCategoryImpl(final Base base, final Object id) {
+	public ArticleCategoryImpl(final Base base, final UUID id) {
 		this.base = base;
 		this.id = id;
 		this.dm = dm();
@@ -36,7 +36,7 @@ public class ArticleCategoryImpl implements ArticleCategory {
 	
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class ArticleCategoryImpl implements ArticleCategory {
 
 	@Override
 	public MesureUnit mesureUnit() throws IOException {
-		Object mesureUnitId = ds.get(dm.mesureUnitIdKey());
+		UUID mesureUnitId = ds.get(dm.mesureUnitIdKey());
 		return new MesureUnitImpl(this.base, mesureUnitId);
 	}
 
@@ -82,7 +82,7 @@ public class ArticleCategoryImpl implements ArticleCategory {
 		
 		List<DomainStore> results = base.domainsStore(dm).findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new ArticleFamilyImpl(this.base, domainStore.key())); 
+			values.add(new ArticleFamilyImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;
@@ -98,17 +98,22 @@ public class ArticleCategoryImpl implements ArticleCategory {
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	@Override
-	public boolean isEqual(ArticleCategory item) throws IOException {
+	public boolean isEqual(ArticleCategory item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(ArticleCategory item) throws IOException {
+	public boolean isNotEqual(ArticleCategory item) {
 		return !isEqual(item);
 	}
 }

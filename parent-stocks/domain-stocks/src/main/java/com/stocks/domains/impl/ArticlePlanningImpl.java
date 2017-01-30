@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.Horodate;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -18,11 +17,11 @@ import com.stocks.domains.api.Location;
 public class ArticlePlanningImpl implements ArticlePlanning {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient ArticlePlanningMetadata dm;
 	private final transient DomainStore ds;
 	
-	public ArticlePlanningImpl(final Base base, final Object id){
+	public ArticlePlanningImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = dm();
@@ -31,7 +30,7 @@ public class ArticlePlanningImpl implements ArticlePlanning {
 	
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
@@ -97,17 +96,22 @@ public class ArticlePlanningImpl implements ArticlePlanning {
 	}
 
 	@Override
-	public boolean isPresent() throws IOException {
-		return base.domainsStore(dm).exists(id);
+	public boolean isPresent() {
+		try {
+			return base.domainsStore(dm).exists(id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 	
 	@Override
-	public boolean isEqual(ArticlePlanning item) throws IOException {
+	public boolean isEqual(ArticlePlanning item) {
 		return this.id().equals(item.id());
 	}
 
 	@Override
-	public boolean isNotEqual(ArticlePlanning item) throws IOException {
+	public boolean isNotEqual(ArticlePlanning item) {
 		return !isEqual(item);
 	}
 }

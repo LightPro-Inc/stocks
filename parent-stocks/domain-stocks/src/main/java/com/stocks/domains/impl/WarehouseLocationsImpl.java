@@ -51,7 +51,7 @@ public class WarehouseLocationsImpl implements Locations {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new LocationImpl(this.base, domainStore.key())); 
+			values.add(new LocationImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;			
