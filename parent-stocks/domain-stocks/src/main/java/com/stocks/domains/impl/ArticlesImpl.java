@@ -123,12 +123,7 @@ public class ArticlesImpl implements Articles {
 
 	@Override
 	public boolean contains(Article item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override

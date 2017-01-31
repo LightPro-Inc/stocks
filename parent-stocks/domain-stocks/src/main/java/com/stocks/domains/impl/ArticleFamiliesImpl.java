@@ -119,12 +119,7 @@ public class ArticleFamiliesImpl implements ArticleFamilies {
 
 	@Override
 	public boolean contains(ArticleFamily item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override

@@ -117,12 +117,7 @@ public class OperationsImpl implements Operations {
 
 	@Override
 	public boolean contains(Operation item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override

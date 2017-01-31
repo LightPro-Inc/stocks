@@ -116,12 +116,7 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 
 	@Override
 	public boolean contains(ArticleCategory item) {
-		try {
-			return ds.exists(item.id());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return ds.exists(item.id());
 	}
 
 	@Override
