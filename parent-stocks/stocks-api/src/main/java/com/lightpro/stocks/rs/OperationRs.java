@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import com.lightpro.stocks.cmd.OperationEdited;
 import com.lightpro.stocks.cmd.StockMovementEdited;
 import com.lightpro.stocks.vm.OperationVm;
+import com.securities.api.Secured;
 import com.stocks.domains.api.Article;
 import com.stocks.domains.api.Location;
 import com.stocks.domains.api.Operation;
@@ -26,6 +27,7 @@ import com.stocks.domains.api.StockMovement;
 public class OperationRs extends StocksBaseRs {
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingle(@PathParam("id") UUID id) throws IOException {	
@@ -43,6 +45,7 @@ public class OperationRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/validate")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response add(@PathParam("id") final UUID id) throws IOException {
@@ -61,6 +64,7 @@ public class OperationRs extends StocksBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("id") final UUID id, final OperationEdited cmd) throws IOException {
@@ -100,6 +104,7 @@ public class OperationRs extends StocksBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response delete(@PathParam("id") final UUID id) throws IOException {

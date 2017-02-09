@@ -14,7 +14,7 @@ public interface Article extends Recordable<UUID, Article> {
 	String description() throws IOException;
 	ArticleFamily family() throws IOException;
 	ArticlePlannings plannings() throws IOException;
-	ArticleStocks stocks() throws IOException;
+	ArticleStocks stocks(final Warehouse warehouse) throws IOException;
 	
-	void update(String name, String internalReference, String barCode, int quantity, double cost, String description, UUID familyId) throws IOException;
+	void update(String name, String internalReference, String barCode, int quantity, double cost, String description) throws IOException;
 }

@@ -15,9 +15,9 @@ public interface OperationType extends Recordable<UUID, OperationType> {
 	Warehouse warehouse() throws IOException;
 	Sequence sequence() throws IOException;
 	
-	Operations unfinishedOperations();
-	Operations operationsDone();
+	Operations unfinishedOperations() throws IOException;
+	Operations operationsDone() throws IOException;
 	
-	void update(String name, UUID defaultSourceLocationId, UUID defaultDestinationLocationId, String categoryId, UUID sequenceId) throws IOException;
+	void update(String name, Location defaultSourceLocation, Location defaultDestinationLocation, OperationCategory category, Sequence sequence) throws IOException;
 	Operation addOperation(String documentSource, UUID sourceLocationId, UUID destinationLocationId, Date movementDate, boolean delayed) throws IOException;
 }

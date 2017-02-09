@@ -12,6 +12,7 @@ import com.infrastructure.datasource.DomainStore;
 import com.stocks.domains.api.Location;
 import com.stocks.domains.api.LocationMetadata;
 import com.stocks.domains.api.LocationType;
+import com.stocks.domains.api.Stocks;
 import com.stocks.domains.api.Warehouse;
 
 public class LocationImpl implements Location {
@@ -25,7 +26,7 @@ public class LocationImpl implements Location {
 		this.base = base;
 		this.id = id;
 		this.dm = dm();
-		this.ds = this.base.domainsStore(this.dm).createDs(id);	
+		this.ds = this.base.domainsStore(this.dm).createDs(id);
 	}
 	
 	@Override
@@ -75,7 +76,7 @@ public class LocationImpl implements Location {
         }
 		
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put(dm.typeKey(), LocationTypeImpl.INTERNAL);
+		params.put(dm.typeKey(), LocationType.INTERNAL.id());
 		params.put(dm.shortNameKey(), shortName);
 		params.put(dm.nameKey(), name);
 		
@@ -89,8 +90,8 @@ public class LocationImpl implements Location {
 
 	@Override
 	public LocationType type() throws IOException {
-		String typeId = ds.get(dm.typeKey());
-		return new LocationTypesImpl().get(typeId);
+		int typeId = ds.get(dm.typeKey());
+		return LocationType.get(typeId);
 	}
 
 	@Override
@@ -100,7 +101,7 @@ public class LocationImpl implements Location {
 
 	@Override
 	public boolean isInternal() throws IOException {
-		return warehouse().id() != null;
+		return warehouse().isPresent();
 	}
 	
 	@Override
@@ -111,5 +112,11 @@ public class LocationImpl implements Location {
 	@Override
 	public boolean isNotEqual(Location item) {
 		return !isEqual(item);
+	}
+
+	@Override
+	public Stocks module() throws IOException {
+		UUID moduleId = ds.get(dm.moduleIdKey());
+		return new StocksImpl(base, moduleId);
 	}
 }

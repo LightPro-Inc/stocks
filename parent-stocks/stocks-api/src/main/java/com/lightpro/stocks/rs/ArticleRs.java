@@ -21,17 +21,18 @@ import com.infrastructure.core.PaginationSet;
 import com.lightpro.stocks.cmd.ArticleEdited;
 import com.lightpro.stocks.cmd.ArticlePlanningEdited;
 import com.lightpro.stocks.vm.ArticlePlanningVm;
-import com.lightpro.stocks.vm.ArticleStocksVm;
 import com.lightpro.stocks.vm.ArticleVm;
+import com.securities.api.Secured;
 import com.stocks.domains.api.Article;
+import com.stocks.domains.api.ArticleFamily;
 import com.stocks.domains.api.ArticlePlanning;
-import com.stocks.domains.api.ArticleStocks;
 import com.stocks.domains.api.Articles;
 
 @Path("/article")
 public class ArticleRs extends StocksBaseRs {
 	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAll() throws IOException {	
 		
@@ -51,6 +52,7 @@ public class ArticleRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/planning")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getPlanning(@PathParam("id") final UUID id) throws IOException {	
@@ -70,7 +72,8 @@ public class ArticleRs extends StocksBaseRs {
 				});			
 	}
 	
-	@GET
+	/*@GET
+	@Secured
 	@Path("/{id}/stock")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getStocks(@PathParam("id") final UUID id) throws IOException {	
@@ -85,9 +88,10 @@ public class ArticleRs extends StocksBaseRs {
 						return Response.ok(new ArticleStocksVm(stock)).build();
 					}
 				});			
-	}
+	}*/
 	
-	@GET
+	/*@GET
+	@Secured
 	@Path("/stock")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getStocks() throws IOException {	
@@ -105,9 +109,10 @@ public class ArticleRs extends StocksBaseRs {
 						return Response.ok(items).build();
 					}
 				});			
-	}
+	}*/
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @QueryParam("page") int page, 
@@ -135,6 +140,7 @@ public class ArticleRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingle(@PathParam("id") UUID id) throws IOException {	
@@ -152,6 +158,7 @@ public class ArticleRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response add(final ArticleEdited cmd) throws IOException {
 		
@@ -160,7 +167,8 @@ public class ArticleRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						stocks().articles().add(cmd.name(), cmd.internalReference(), cmd.barCode(), cmd.quantity(), cmd.cost(), cmd.description(), cmd.familyId());
+						ArticleFamily family = stocks().families().get(cmd.familyId());
+						family.articles().add(cmd.name(), cmd.internalReference(), cmd.barCode(), cmd.quantity(), cmd.cost(), cmd.description());
 						
 						return Response.status(Response.Status.OK).build();
 					}
@@ -168,6 +176,7 @@ public class ArticleRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/planning")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response setPlanning(@PathParam("id") final UUID id, final List<ArticlePlanningEdited> plannings) throws IOException {
@@ -190,6 +199,7 @@ public class ArticleRs extends StocksBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("id") final UUID id, final ArticleEdited cmd) throws IOException {
@@ -200,7 +210,7 @@ public class ArticleRs extends StocksBaseRs {
 					public Response call() throws IOException {
 						
 						Article article = stocks().articles().get(cmd.id());
-						article.update(cmd.name(), cmd.internalReference(), cmd.barCode(), cmd.quantity(), cmd.cost(), cmd.description(), cmd.familyId());
+						article.update(cmd.name(), cmd.internalReference(), cmd.barCode(), cmd.quantity(), cmd.cost(), cmd.description());
 						
 						return Response.status(Response.Status.OK).build();
 					}
@@ -208,6 +218,7 @@ public class ArticleRs extends StocksBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response delete(@PathParam("id") final UUID id) throws IOException {

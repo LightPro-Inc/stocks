@@ -2,9 +2,7 @@ package com.stocks.domains.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
@@ -15,23 +13,26 @@ import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainStore;
 import com.infrastructure.datasource.DomainsStore;
+import com.stocks.domains.api.AllArticleFamilies;
 import com.stocks.domains.api.ArticleCategory;
+import com.stocks.domains.api.ArticleCategoryMetadata;
 import com.stocks.domains.api.ArticleFamiliesByCategory;
 import com.stocks.domains.api.ArticleFamily;
 import com.stocks.domains.api.ArticleFamilyMetadata;
+import com.stocks.domains.api.Stocks;
 
-public class ArticleFamiliesImpl implements ArticleFamiliesByCategory {
+public class AllArticleFamiliesImpl implements AllArticleFamilies {
 
 	private transient final Base base;
 	private final transient ArticleFamilyMetadata dm;
 	private final transient DomainsStore ds;
-	private final transient ArticleCategory category;
+	private final transient Stocks module;
 	
-	public ArticleFamiliesImpl(final Base base, final ArticleCategory category){
+	public AllArticleFamiliesImpl(final Base base, final Stocks module){
 		this.base = base;
 		this.dm = ArticleFamilyImpl.dm();
 		this.ds = this.base.domainsStore(this.dm);	
-		this.category = category;
+		this.module = module;
 	}
 	
 	@Override
@@ -49,13 +50,21 @@ public class ArticleFamiliesImpl implements ArticleFamiliesByCategory {
 		List<ArticleFamily> values = new ArrayList<ArticleFamily>();
 		
 		HorodateMetadata hm = HorodateImpl.dm();
-		String statement = String.format("SELECT %s FROM %s WHERE (%s ILIKE ? OR %s ILIKE ?) AND %s=? ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.nameKey(), dm.descriptionKey(), dm.categoryIdKey(), hm.dateCreatedKey());
+		ArticleCategoryMetadata dmCat = ArticleCategoryImpl.dm();
+		String statement = String.format("SELECT fa.%s FROM %s fa "
+				+ "JOIN %s ca ON ca.%s=fa.%s "
+				+ "WHERE (fa.%s ILIKE ? OR fa.%s ILIKE ?) AND ca.%s=? "
+				+ "ORDER BY fa.%s DESC LIMIT ? OFFSET ?", 
+				dm.keyName(), dm.domainName(), 
+				dmCat.domainName(), dmCat.keyName(), dm.categoryIdKey(),
+				dm.nameKey(), dm.descriptionKey(), dmCat.moduleIdKey(), 
+				hm.dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
-		params.add(category.id());
+		params.add(module.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -75,13 +84,20 @@ public class ArticleFamiliesImpl implements ArticleFamiliesByCategory {
 
 	@Override
 	public int totalCount(String filter) throws IOException {
-		String statement = String.format("SELECT COUNT(%s) FROM %s WHERE (%s ILIKE ? OR %s ILIKE ?) && %s=?", dm.keyName(), dm.domainName(), dm.nameKey(), dm.descriptionKey(), dm.categoryIdKey());
+		
+		ArticleCategoryMetadata dmCat = ArticleCategoryImpl.dm();
+		String statement = String.format("SELECT COUNT(fa.%s) FROM %s fa "
+				+ "JOIN %s ca ON ca.%s=fa.%s "
+				+ "WHERE (fa.%s ILIKE ? OR fa.%s ILIKE ?) AND ca.%s=? ",
+				dm.keyName(), dm.domainName(), 
+				dmCat.domainName(), dmCat.keyName(), dm.categoryIdKey(),
+				dm.nameKey(), dm.descriptionKey(), dmCat.moduleIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
-		params.add(category.id());
+		params.add(module.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());			
@@ -89,39 +105,30 @@ public class ArticleFamiliesImpl implements ArticleFamiliesByCategory {
 
 	@Override
 	public ArticleFamily get(UUID id) throws IOException {
-		if(!ds.exists(id))
+		ArticleFamily item = build(id);
+		
+		if(!contains(item))
 			throw new NotFoundException("La catégorie d'article n'a pas été trouvée !");
 		
 		return build(id);
 	}
 
 	@Override
-	public ArticleFamily add(String name, String description) throws IOException {
-		
-		if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Invalid name : it can't be empty!");
-        }
-		
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put(dm.nameKey(), name);
-		params.put(dm.descriptionKey(), description);
-		params.put(dm.categoryIdKey(), category.id());
-		
-		UUID id = UUID.randomUUID();
-		ds.set(id, params);
-		
-		return build(id);
+	public ArticleFamily add(String name, String description, ArticleCategory category) throws IOException {
+		ArticleFamiliesByCategory families = new ArticleFamiliesImpl(base, category);
+		return families.add(name, description);		
 	}
 
 	@Override
-	public void delete(ArticleFamily category) throws IOException {
-		ds.delete(category.id());
+	public void delete(ArticleFamily item) throws IOException {
+		if(contains(item))
+			ds.delete(item.id());
 	}
 
 	@Override
 	public boolean contains(ArticleFamily item) {
 		try {
-			return item.isPresent() && item.category().isEqual(category);
+			return item.isPresent() && item.category().module().isEqual(module);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

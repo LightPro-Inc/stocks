@@ -3,16 +3,18 @@ package com.stocks.domains.api;
 import java.io.IOException;
 import java.util.List;
 
-public interface Stocks {	
+import com.securities.api.Module;
+import com.securities.api.Sequences;
+
+public interface Stocks extends Module {	
     ArticleCategories articleCategories();
-    ArticleFamilies articleFamilies();
-    Articles articles();
-    Warehouses warehouses();
-    LocationTypes locationTypes();
+    AllArticleFamilies families();
+    AllArticles articles();
     Locations locations();
     OperationTypes operationTypes();
-    OperationCategories operationCategories();
-    List<ArticleStocks> stocks() throws IOException;
+    Warehouses warehouses();
+    List<ArticleStocks> stocks(final Warehouse warehouse) throws IOException;
     StockMovements stockMovements() throws IOException;
     Operations operations() throws IOException;
+    Sequences sequences() throws IOException;
 }

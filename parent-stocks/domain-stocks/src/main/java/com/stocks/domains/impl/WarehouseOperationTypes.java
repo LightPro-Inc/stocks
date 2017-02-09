@@ -16,19 +16,20 @@ import com.infrastructure.datasource.DomainsStore;
 import com.stocks.domains.api.OperationType;
 import com.stocks.domains.api.OperationTypeMetadata;
 import com.stocks.domains.api.OperationTypes;
+import com.stocks.domains.api.Warehouse;
 
 public class WarehouseOperationTypes implements OperationTypes {
 
 	private final transient Base base;
-	private final transient Object warehouseId;
-	private final transient OperationTypeMetadata dm;	
+	private final transient OperationTypeMetadata dm;
 	private final transient DomainsStore ds;
+	private final transient Warehouse warehouse;
 	
-	public WarehouseOperationTypes(final Base base, final Object warehouseId){
+	public WarehouseOperationTypes(final Base base, final Warehouse warehouse){
 		this.base = base;
-		this.warehouseId = warehouseId;
 		this.dm = OperationTypeImpl.dm();
 		this.ds = base.domainsStore(dm);
+		this.warehouse = warehouse;
 	}
 	
 	@Override
@@ -51,7 +52,7 @@ public class WarehouseOperationTypes implements OperationTypes {
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
-		params.add(warehouseId);
+		params.add(warehouse.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -76,7 +77,7 @@ public class WarehouseOperationTypes implements OperationTypes {
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
-		params.add(warehouseId);
+		params.add(warehouse.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());	
@@ -84,34 +85,32 @@ public class WarehouseOperationTypes implements OperationTypes {
 
 	@Override
 	public OperationType get(UUID id) throws IOException {
-		boolean exists = ds.exists(id);
-		OperationType item = null;
 		
-		if(exists)
-			item = new OperationTypeImpl(this.base, id);
+		OperationType item = build(id);
 		
-		if(exists && item.warehouse().id().equals(id))
-			return item;
-		else
-			throw new NotFoundException("Le type d'opération n'a pas été trouvé !");			
+		if(!contains(item))
+			throw new NotFoundException("Le type d'opération n'a pas été trouvé !");
+		
+		return item;
 	}
 
 	@Override
 	public void delete(OperationType item) throws IOException {
-		
-		OperationType origin = get(item.id());		
-		ds.delete(origin.id());
+		if(contains(item))
+		{
+			item.unfinishedOperations().deleteAll();
+			ds.delete(item.id());
+		}
 	}
 
 	@Override
 	public boolean contains(OperationType item) {
 		try {
-			get(item.id());
+			return item.isPresent() && item.warehouse().isEqual(warehouse);
 		} catch (IOException e) {
-			return false;
+			e.printStackTrace();
 		}
-		
-		return true;
+		return false;
 	}
 
 	@Override

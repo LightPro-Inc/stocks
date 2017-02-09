@@ -34,4 +34,8 @@ public class WarehouseMetadata implements DomainMetadata {
 	public String shortNameKey(){
 		return "shortname";
 	}	
+	
+	public String moduleIdKey(){
+		return "moduleid";
+	}	
 }

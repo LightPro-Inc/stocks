@@ -44,7 +44,7 @@ public class OperationTypeMetadata implements DomainMetadata {
 	}
 	
 	public String operationCategoryIdKey(){
-		return "operationcategoryid";
+		return "categoryid";
 	}
 	
 	public String sequenceIdKey(){

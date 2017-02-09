@@ -18,25 +18,31 @@ import com.infrastructure.datasource.DomainsStore;
 import com.stocks.domains.api.ArticleCategories;
 import com.stocks.domains.api.ArticleCategory;
 import com.stocks.domains.api.ArticleCategoryMetadata;
+import com.stocks.domains.api.Stocks;
 
 public class ArticleCategoriesImpl implements ArticleCategories {
 
 	private final transient Base base;
 	private final transient ArticleCategoryMetadata dm;
 	private final transient DomainsStore ds;
+	private final transient Stocks module;
 	
-	public ArticleCategoriesImpl(final Base base){
+	public ArticleCategoriesImpl(final Base base, final Stocks module){
 		this.base = base;
 		this.dm = ArticleCategoryImpl.dm();
 		this.ds = base.domainsStore(dm);
+		this.module = module;
 	}
 
 	@Override
 	public ArticleCategory get(UUID id) throws IOException {
-		if(!ds.exists(id))
+		
+		ArticleCategory item = build(id);
+		
+		if(!contains(item))
 			throw new NotFoundException("La catégorie d'article n'a pas été trouvée !");
 		
-		return new ArticleCategoryImpl(this.base, id);
+		return build(id);
 	}
 
 	@Override
@@ -53,16 +59,18 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(dm.nameKey(), name);
 		params.put(dm.mesureUnitIdKey(), mesureUnitId);
+		params.put(dm.moduleIdKey(), module.id());
 		
 		UUID id = UUID.randomUUID();
 		ds.set(id, params);
 		
-		return new ArticleCategoryImpl(this.base, id);			
+		return build(id);			
 	}
 
 	@Override
 	public void delete(ArticleCategory item) throws IOException {
-		ds.delete(item.id());
+		if(contains(item))
+			ds.delete(item.id());
 	}
 
 	@Override
@@ -80,11 +88,12 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 		List<ArticleCategory> values = new ArrayList<ArticleCategory>();
 				
 		HorodateMetadata hm = HorodateImpl.dm();
-		String statement = String.format("SELECT %s FROM %s WHERE %s ILIKE ? ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.nameKey(), hm.dateCreatedKey());
+		String statement = String.format("SELECT %s FROM %s WHERE %s ILIKE ? AND %s=? ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.nameKey(), dm.moduleIdKey(), hm.dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -96,7 +105,7 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new ArticleCategoryImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
+			values.add(build(UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;		
@@ -104,11 +113,12 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 
 	@Override
 	public int totalCount(String filter) throws IOException {	
-		String statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s ILIKE ?", dm.keyName(), dm.domainName(), dm.nameKey());
+		String statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s ILIKE ? AND %s=?", dm.keyName(), dm.domainName(), dm.nameKey(), dm.moduleIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());		
@@ -116,7 +126,12 @@ public class ArticleCategoriesImpl implements ArticleCategories {
 
 	@Override
 	public boolean contains(ArticleCategory item) {
-		return ds.exists(item.id());
+		try {
+			return item.isPresent() && item.module().isEqual(module);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false; 
 	}
 
 	@Override

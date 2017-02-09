@@ -45,6 +45,6 @@ public class ArticleCategoryVm {
 	
 	@JsonGetter
 	public int getNumberOfFamilies() throws IOException {
-		return origin.families().size();
+		return origin.families().all().size();
 	}	
 }

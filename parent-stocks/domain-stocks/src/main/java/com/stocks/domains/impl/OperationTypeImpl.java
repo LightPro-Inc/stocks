@@ -1,12 +1,14 @@
 package com.stocks.domains.impl;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.common.utilities.convert.TimeConvert;
 import com.infrastructure.core.Horodate;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -70,33 +72,33 @@ public class OperationTypeImpl implements OperationType {
 	}
 
 	@Override
-	public void update(String name, UUID defaultSourceLocationId, UUID defaultDestinationLocationId, String categoryId, UUID sequenceId) throws IOException {
+	public void update(String name, Location defaultSourceLocation, Location defaultDestinationLocation, OperationCategory category, Sequence sequence) throws IOException {
 		if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid name : it can't be empty!");
         }
 		
-		if (defaultSourceLocationId == null) {
+		if (!defaultSourceLocation.isPresent()) {
             throw new IllegalArgumentException("Invalid default source location : it can't be empty!");
         }
 		
-		if (defaultDestinationLocationId == null) {
+		if (!defaultDestinationLocation.isPresent()) {
             throw new IllegalArgumentException("Invalid default destination location : it can't be empty!");
         }
 		
-		if (categoryId == null || categoryId.isEmpty()) {
+		if (category == null) {
             throw new IllegalArgumentException("Invalid category : it can't be empty!");
         }
 		
-		if (sequenceId == null) {
+		if (!sequence.isPresent()) {
             throw new IllegalArgumentException("Invalid sequence : it can't be empty!");
         }
 		
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(dm.nameKey(), name);
-		params.put(dm.defaultSourceLocationKey(), defaultSourceLocationId);
-		params.put(dm.defaultDestinationLocationKey(), defaultDestinationLocationId);
-		params.put(dm.operationCategoryIdKey(), categoryId);
-		params.put(dm.sequenceIdKey(), sequenceId);
+		params.put(dm.defaultSourceLocationKey(), defaultSourceLocation.id());
+		params.put(dm.defaultDestinationLocationKey(), defaultDestinationLocation.id());
+		params.put(dm.operationCategoryIdKey(), category.id());
+		params.put(dm.sequenceIdKey(), sequence.id());
 		
 		ds.set(params);	
 	}
@@ -109,8 +111,8 @@ public class OperationTypeImpl implements OperationType {
 
 	@Override
 	public OperationCategory category() throws IOException {
-		String categoryId = ds.get(dm.operationCategoryIdKey());
-		return new OperationCategoriesImpl().get(categoryId);
+		int categoryId = ds.get(dm.operationCategoryIdKey());
+		return OperationCategory.get(categoryId);
 	}
 
 	@Override
@@ -141,7 +143,7 @@ public class OperationTypeImpl implements OperationType {
 		params.put(dm.statutIdKey(), OperationStatut.BROUILLON.id());
 		params.put(dm.delayedKey(), delayed);
 		
-		movementDate = delayed ? movementDate : Date.from(Instant.from(java.time.LocalDate.now().atStartOfDay()));
+		movementDate = delayed ? movementDate : TimeConvert.toDate(LocalDateTime.now(), ZoneId.systemDefault());
 		params.put(dm.movementDateKey(), new java.sql.Timestamp(movementDate.getTime()));
 		params.put(dm.operationTypeIdKey(), this.id);
 				
@@ -157,13 +159,13 @@ public class OperationTypeImpl implements OperationType {
 	}
 
 	@Override
-	public Operations unfinishedOperations() {
-		return new OperationsByType(base, OperationStatut.BROUILLON, this.id);
+	public Operations unfinishedOperations() throws IOException {
+		return new OperationsByType(base, OperationStatut.BROUILLON, this);
 	}
 
 	@Override
-	public Operations operationsDone() {
-		return new OperationsByType(base, OperationStatut.VALIDE, this.id);
+	public Operations operationsDone() throws IOException {
+		return new OperationsByType(base, OperationStatut.VALIDE, this);
 	}
 	
 	@Override

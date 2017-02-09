@@ -6,8 +6,8 @@ import java.util.UUID;
 import com.infrastructure.core.Recordable;
 
 public interface ArticlePlanning extends Recordable<UUID, ArticlePlanning> {
-	Location location() throws IOException;
-	Article article() throws IOException;
+	Location location();
+	Article article();
 	int maximumStock() throws IOException;
 	int safetyStock() throws IOException;
 	int minimumStock() throws IOException;

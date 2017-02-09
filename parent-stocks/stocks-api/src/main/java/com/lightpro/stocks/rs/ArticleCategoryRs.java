@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import com.infrastructure.core.PaginationSet;
 import com.lightpro.stocks.cmd.ArticleCategoryEdited;
 import com.lightpro.stocks.vm.ArticleFamilyVm;
+import com.securities.api.Secured;
 import com.lightpro.stocks.vm.ArticleCategoryVm;
 import com.stocks.domains.api.ArticleCategories;
 import com.stocks.domains.api.ArticleCategory;
@@ -28,6 +29,7 @@ import com.stocks.domains.api.ArticleCategory;
 public class ArticleCategoryRs extends StocksBaseRs {
 	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAll() throws IOException {	
 		
@@ -47,6 +49,7 @@ public class ArticleCategoryRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/family")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllFamilies(@PathParam("id") UUID id) throws IOException {	
@@ -57,7 +60,7 @@ public class ArticleCategoryRs extends StocksBaseRs {
 					public Response call() throws IOException {
 						
 						List<ArticleFamilyVm> items = stocks().articleCategories().get(id)
-															  .families()
+															  .families().all()
 														      .stream()
 													 	      .map(m -> new ArticleFamilyVm(m))
 													          .collect(Collectors.toList());
@@ -68,6 +71,7 @@ public class ArticleCategoryRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @QueryParam("page") int page, 
@@ -96,6 +100,7 @@ public class ArticleCategoryRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingle(@PathParam("id") UUID id) throws IOException {	
@@ -113,6 +118,7 @@ public class ArticleCategoryRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response add(final ArticleCategoryEdited cmd) throws IOException {
 		
@@ -129,6 +135,7 @@ public class ArticleCategoryRs extends StocksBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("id") final UUID id, final ArticleCategoryEdited cmd) throws IOException {
@@ -147,6 +154,7 @@ public class ArticleCategoryRs extends StocksBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response delete(@PathParam("id") final UUID id) throws IOException {

@@ -15,6 +15,7 @@ import com.infrastructure.datasource.DomainStore;
 import com.infrastructure.datasource.DomainsStore;
 import com.stocks.domains.api.Operation;
 import com.stocks.domains.api.OperationMetadata;
+import com.stocks.domains.api.OperationType;
 import com.stocks.domains.api.Operations;
 import com.stocks.domains.api.Operation.OperationStatut;
 
@@ -23,12 +24,12 @@ public class OperationsByType implements Operations {
 	private transient final Base base;
 	private final transient OperationMetadata dm;
 	private final transient OperationStatut statut;
-	private final transient UUID typeId;
+	private final transient OperationType type;
 	private final transient DomainsStore ds;
 	
-	public OperationsByType(final Base base, final OperationStatut statut, final UUID typeId){
+	public OperationsByType(final Base base, final OperationStatut statut, final OperationType type){
 		this.base = base;
-		this.typeId = typeId;
+		this.type = type;
 		this.statut = statut;
 		this.dm = OperationImpl.dm();
 		this.ds = this.base.domainsStore(this.dm);	
@@ -55,11 +56,11 @@ public class OperationsByType implements Operations {
 		
 		if(statut == OperationStatut.NONE) {
 			statement = String.format("SELECT %s FROM %s WHERE %s=? AND (%s ILIKE ? OR %s ILIKE ?) ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.operationTypeIdKey(), dm.referenceKey(), dm.documentSourceKey(), hm.dateCreatedKey());
-			params.add(this.typeId);
+			params.add(this.type.id());
 		}
 		else {
 			statement = String.format("SELECT %s FROM %s WHERE %s=? AND %s=? AND (%s ILIKE ? OR %s ILIKE ?) ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.operationTypeIdKey(), dm.statutIdKey(), dm.referenceKey(), dm.documentSourceKey(), hm.dateCreatedKey());
-			params.add(this.typeId);
+			params.add(this.type.id());
 			params.add(statut.id());
 		}		
 		
@@ -91,11 +92,11 @@ public class OperationsByType implements Operations {
 		
 		if(statut == OperationStatut.NONE) {
 			statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s=? AND (%s ILIKE ? OR %s ILIKE ?)", dm.keyName(), dm.domainName(), dm.operationTypeIdKey(), dm.referenceKey(), dm.documentSourceKey());
-			params.add(this.typeId);
+			params.add(this.type.id());
 		}
 		else {
 			statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s=? AND %s=? AND (%s ILIKE ? OR %s ILIKE ?)", dm.keyName(), dm.domainName(), dm.operationTypeIdKey(), dm.statutIdKey(), dm.referenceKey(), dm.documentSourceKey());
-			params.add(this.typeId);
+			params.add(this.type.id());
 			params.add(statut.id());
 		}		
 		
@@ -113,7 +114,7 @@ public class OperationsByType implements Operations {
 		
 		if(!op.isPresent() || 
 		   (op.isPresent() && (statut != OperationStatut.NONE && op.statut() != statut) || 
-		   !op.type().id().equals(this.typeId)))
+		   !op.type().isEqual(this.type)))
 			throw new NotFoundException("L'article n'a pas été trouvé !");
 		
 		return op;
@@ -121,28 +122,33 @@ public class OperationsByType implements Operations {
 
 	@Override
 	public void delete(Operation item) throws IOException {
-		Operation origin = get(item.id());
-		
-		if(origin.statut() == OperationStatut.VALIDE)
-			throw new IllegalArgumentException("Vous ne pouvez pas supprimer une opération validée!");		
-		
-		origin.movements().deleteAll(); // supprimer les tous les mouvements
-		ds.delete(origin.id());
+		if(contains(item)) {
+			item.movements().deleteAll();
+			ds.delete(item.id());
+		}
 	}
 
 	@Override
 	public boolean contains(Operation item) {
+		
 		try {
-			get(item.id());
+			return item.isPresent() && item.statut() == OperationStatut.VALIDE;
 		} catch (IOException e) {
-			return false;
+			e.printStackTrace();
 		}
 		
-		return true;
+		return false;		
 	}
 
 	@Override
 	public Operation build(UUID id) {
 		return new OperationImpl(base, id);
+	}
+
+	@Override
+	public void deleteAll() throws IOException {
+		for (Operation op : all()) {
+			delete(op);
+		}
 	}
 }

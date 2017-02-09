@@ -10,8 +10,9 @@ public interface ArticleStock extends Recordable<UUID, ArticleStock> {
 	void updateQuantity(double quantity) throws IOException;
 	StockAlert alert() throws IOException;
 	Article article() throws IOException;
+	Warehouse warehouse() throws IOException;
 	Location location() throws IOException;
-	ArticlePlanning planning() throws IOException;
+	ArticlePlanning planning();
 	
 	public enum StockAlert {
 		

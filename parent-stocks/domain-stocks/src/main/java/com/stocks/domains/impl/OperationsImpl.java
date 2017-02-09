@@ -16,7 +16,10 @@ import com.infrastructure.datasource.DomainsStore;
 import com.stocks.domains.api.Operation;
 import com.stocks.domains.api.Operation.OperationStatut;
 import com.stocks.domains.api.OperationMetadata;
+import com.stocks.domains.api.OperationTypeMetadata;
 import com.stocks.domains.api.Operations;
+import com.stocks.domains.api.Stocks;
+import com.stocks.domains.api.WarehouseMetadata;
 
 public class OperationsImpl implements Operations {
 
@@ -24,12 +27,14 @@ public class OperationsImpl implements Operations {
 	private final transient OperationMetadata dm;
 	private final transient OperationStatut statut;
 	private final transient DomainsStore ds;
+	private final transient Stocks module;
 	
-	public OperationsImpl(final Base base, OperationStatut statut){
+	public OperationsImpl(final Base base, final OperationStatut statut, Stocks module){
 		this.base = base;
 		this.statut = statut;
 		this.dm = OperationImpl.dm();
-		this.ds = this.base.domainsStore(this.dm);	
+		this.ds = this.base.domainsStore(this.dm);
+		this.module = module;
 	}
 	
 	@Override
@@ -51,16 +56,41 @@ public class OperationsImpl implements Operations {
 		
 		List<Object> params = new ArrayList<Object>();
 		
+		OperationTypeMetadata dmOt = OperationTypeImpl.dm();
+		WarehouseMetadata dmWh = WarehouseImpl.dm();
+		
 		if(statut == OperationStatut.NONE)
-			statement = String.format("SELECT %s FROM %s WHERE %s ILIKE ? OR %s ILIKE ? ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.referenceKey(), dm.documentSourceKey(), hm.dateCreatedKey());
+		{					
+			statement = String.format("SELECT op.%s FROM %s op "
+					+ "JOIN %s ot ON ot.%s=op.%s "
+					+ "left JOIN %s wh ON wh.%s=ot.%s "
+					+ "WHERE (op.%s ILIKE ? OR op.%s ILIKE ?) AND wh.%s=? "
+					+ "ORDER BY op.%s DESC LIMIT ? OFFSET ?", 
+					dm.keyName(), dm.domainName(),
+					dmOt.domainName(), dmOt.keyName(), dm.operationTypeIdKey(),
+					dmWh.domainName(), dmWh.keyName(), dmOt.warehouseIdKey(),
+					dm.referenceKey(), dm.documentSourceKey(), dmWh.moduleIdKey(),
+					hm.dateCreatedKey());
+		}
 		else {
-			statement = String.format("SELECT %s FROM %s WHERE %s=? AND (%s ILIKE ? OR %s ILIKE ?) ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.statutIdKey(), dm.referenceKey(), dm.documentSourceKey(), hm.dateCreatedKey());
+			statement = String.format("SELECT op.%s FROM %s op "
+					+ "JOIN %s ot ON ot.%s=op.%s "
+					+ "left JOIN %s wh ON wh.%s=ot.%s "
+					+ "WHERE op.%s=? AND (op.%s ILIKE ? OR op.%s ILIKE ?) AND wh.%s=? "
+					+ "ORDER BY op.%s DESC LIMIT ? OFFSET ?", 
+					dm.keyName(), dm.domainName(),
+					dmOt.domainName(), dmOt.keyName(), dm.operationTypeIdKey(),
+					dmWh.domainName(), dmWh.keyName(), dmOt.warehouseIdKey(),
+					dm.statutIdKey(), dm.referenceKey(), dm.documentSourceKey(), dmWh.moduleIdKey(),
+					hm.dateCreatedKey());
+			
 			params.add(statut.id());
 		}		
 		
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -84,16 +114,37 @@ public class OperationsImpl implements Operations {
 		
 		String statement;
 		
+		OperationTypeMetadata dmOt = OperationTypeImpl.dm();
+		WarehouseMetadata dmWh = WarehouseImpl.dm();
+		
 		if(statut == OperationStatut.NONE)
-			statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s ILIKE ? OR %s ILIKE ?", dm.keyName(), dm.domainName(), dm.referenceKey(), dm.documentSourceKey());
-		else {
-			statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s=? AND (%s ILIKE ? OR %s ILIKE ?)", dm.keyName(), dm.domainName(), dm.statutIdKey(), dm.referenceKey(), dm.documentSourceKey());
-			params.add(statut.id());
+		{					
+			statement = String.format("SELECT COUNT(op.%s) FROM %s op "
+					+ "JOIN %s ot ON ot.%s=op.%s "
+					+ "left JOIN %s wh ON wh.%s=ot.%s "
+					+ "WHERE (op.%s ILIKE ? OR op.%s ILIKE ?) AND wh.%s=? ",
+					dm.keyName(), dm.domainName(),
+					dmOt.domainName(), dmOt.keyName(), dm.operationTypeIdKey(),
+					dmWh.domainName(), dmWh.keyName(), dmOt.warehouseIdKey(),
+					dm.referenceKey(), dm.documentSourceKey(), dmWh.moduleIdKey());
 		}
+		else {
+			statement = String.format("SELECT COUNT(op.%s) FROM %s op "
+					+ "JOIN %s ot ON ot.%s=op.%s "
+					+ "left JOIN %s wh ON wh.%s=ot.%s "
+					+ "WHERE op.%s=? AND (op.%s ILIKE ? OR op.%s ILIKE ?) AND wh.%s=? ",
+					dm.keyName(), dm.domainName(),
+					dmOt.domainName(), dmOt.keyName(), dm.operationTypeIdKey(),
+					dmWh.domainName(), dmWh.keyName(), dmOt.warehouseIdKey(),
+					dm.statutIdKey(), dm.referenceKey(), dm.documentSourceKey(), dmWh.moduleIdKey());
+			
+			params.add(statut.id());
+		}		
 		
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());		
@@ -103,25 +154,41 @@ public class OperationsImpl implements Operations {
 	public Operation get(UUID id) throws IOException {
 		Operation op = new OperationImpl(this.base, id);
 		
-		if(!op.isPresent() || (op.isPresent() && statut != OperationStatut.NONE && op.statut() != statut))
-			throw new NotFoundException("L'article n'a pas été trouvé !");
+		if(!contains(op))
+			throw new NotFoundException("L'opération n'a pas été trouvée !");
 		
 		return op;
 	}
 
 	@Override
 	public void delete(Operation item) throws IOException {
-		Operation origin = get(item.id());		
-		ds.delete(origin.id());
+		if(contains(item)) {
+			item.movements().deleteAll();
+			ds.delete(item.id());
+		}
 	}
 
 	@Override
 	public boolean contains(Operation item) {
-		return ds.exists(item.id());
+		try {
+			return item.isPresent()
+					&& (statut == OperationStatut.NONE || item.statut() == statut) 
+					&& item.type().warehouse().moduleStocks().isEqual(module);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
 	public Operation build(UUID id) {
 		return new OperationImpl(this.base, id);
+	}
+	
+	@Override
+	public void deleteAll() throws IOException {
+		for (Operation op : all()) {			
+			delete(op);
+		}
 	}
 }

@@ -164,7 +164,7 @@ public class OperationImpl implements Operation {
 
 	@Override
 	public StockMovements movements() throws IOException {
-		return new OperationMovements(this.base, id);
+		return new OperationMovements(this.base, this);
 	}
 
 	@Override

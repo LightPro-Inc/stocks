@@ -34,7 +34,7 @@ public class WarehouseVm {
 	
 	@JsonGetter
 	public int getNumberOfLocations() throws IOException {
-		return origin.locations().all().size();
+		return origin.locations().internals().size();
 	}	
 	
 	@JsonGetter

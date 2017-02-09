@@ -21,6 +21,8 @@ import com.infrastructure.core.PaginationSet;
 import com.lightpro.stocks.cmd.ArticleFamilyEdited;
 import com.lightpro.stocks.vm.ArticleFamilyVm;
 import com.lightpro.stocks.vm.ArticleVm;
+import com.securities.api.Secured;
+import com.stocks.domains.api.ArticleCategory;
 import com.stocks.domains.api.ArticleFamilies;
 import com.stocks.domains.api.ArticleFamily;
 
@@ -28,6 +30,7 @@ import com.stocks.domains.api.ArticleFamily;
 public class ArticleFamilyRs extends StocksBaseRs {
 	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAll() throws IOException {	
 		
@@ -36,7 +39,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<ArticleFamilyVm> items = stocks().articleFamilies().all()
+						List<ArticleFamilyVm> items = stocks().families().all()
 								 .stream()
 						 		 .map(m -> new ArticleFamilyVm(m))
 						 		 .collect(Collectors.toList());
@@ -47,6 +50,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @QueryParam("page") int page, 
@@ -58,7 +62,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						ArticleFamilies container = stocks().articleFamilies();
+						ArticleFamilies container = stocks().families();
 						
 						List<ArticleFamilyVm> itemsVm = container.find(page, pageSize, filter).stream()
 																 .map(m -> new ArticleFamilyVm(m))
@@ -74,6 +78,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingle(@PathParam("id") UUID id) throws IOException {	
@@ -83,7 +88,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						ArticleFamilyVm item = new ArticleFamilyVm(stocks().articleFamilies().get(id));
+						ArticleFamilyVm item = new ArticleFamilyVm(stocks().families().get(id));
 
 						return Response.ok(item).build();
 					}
@@ -91,6 +96,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/article")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllArticles(@PathParam("id") UUID id) throws IOException {	
@@ -100,11 +106,11 @@ public class ArticleFamilyRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<ArticleVm> items = stocks().articleFamilies().get(id)
-															  .articles()
-														      .stream()
-													 	      .map(m -> new ArticleVm(m))
-													          .collect(Collectors.toList());
+						List<ArticleVm> items = stocks().families().get(id)
+														  .articles().all()
+													      .stream()
+												 	      .map(m -> new ArticleVm(m))
+												          .collect(Collectors.toList());
 
 						return Response.ok(items).build();
 					}
@@ -112,6 +118,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response add(final ArticleFamilyEdited cmd) throws IOException {
 		
@@ -120,7 +127,8 @@ public class ArticleFamilyRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						stocks().articleFamilies().add(cmd.name(), cmd.description(), cmd.categoryId());
+						ArticleCategory category = stocks().articleCategories().get(cmd.categoryId());
+						category.families().add(cmd.name(), cmd.description());
 						
 						return Response.status(Response.Status.OK).build();
 					}
@@ -128,6 +136,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("id") final UUID id, final ArticleFamilyEdited cmd) throws IOException {
@@ -137,8 +146,8 @@ public class ArticleFamilyRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						ArticleFamily item = stocks().articleFamilies().get(cmd.id());
-						item.update(cmd.name(), cmd.description(), cmd.categoryId());
+						ArticleFamily item = stocks().families().get(cmd.id());
+						item.update(cmd.name(), cmd.description());
 						
 						return Response.status(Response.Status.OK).build();
 					}
@@ -146,6 +155,7 @@ public class ArticleFamilyRs extends StocksBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response delete(@PathParam("id") final UUID id) throws IOException {
@@ -155,8 +165,8 @@ public class ArticleFamilyRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						ArticleFamily item = stocks().articleFamilies().get(id);
-						stocks().articleFamilies().delete(item);
+						ArticleFamily item = stocks().families().get(id);
+						stocks().families().delete(item);
 						
 						return Response.status(Response.Status.OK).build();
 					}

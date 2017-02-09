@@ -20,12 +20,16 @@ public class ArticlePlanningImpl implements ArticlePlanning {
 	private final transient UUID id;
 	private final transient ArticlePlanningMetadata dm;
 	private final transient DomainStore ds;
+	private final transient Article article;
+	private final transient Location location;
 	
-	public ArticlePlanningImpl(final Base base, final UUID id){
+	public ArticlePlanningImpl(final Base base, final UUID id, final Article article, final Location location){
 		this.base = base;
 		this.id = id;
 		this.dm = dm();
 		this.ds = this.base.domainsStore(this.dm).createDs(id);	
+		this.article = article;
+		this.location = location;
 	}
 	
 	@Override
@@ -39,15 +43,13 @@ public class ArticlePlanningImpl implements ArticlePlanning {
 	}
 
 	@Override
-	public Location location() throws IOException {
-		UUID locationId = ds.get(dm.locationIdKey());
-		return new LocationImpl(this.base, locationId);
+	public Location location() {
+		return location;
 	}
 
 	@Override
-	public Article article() throws IOException {
-		UUID articleId = ds.get(dm.articleIdKey());
-		return new ArticleImpl(this.base, articleId);
+	public Article article() {
+		return article;
 	}
 
 	@Override

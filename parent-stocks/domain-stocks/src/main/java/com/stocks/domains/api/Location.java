@@ -12,6 +12,7 @@ public interface Location extends Recordable<UUID, Location> {
 	boolean active() throws IOException;
 	boolean isInternal() throws IOException;
 	Warehouse warehouse() throws IOException;
+	Stocks module() throws IOException;
 	
 	void activate(boolean activate) throws IOException;
 	void update(String name, String shortName) throws IOException;

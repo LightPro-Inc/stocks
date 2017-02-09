@@ -34,4 +34,8 @@ public class ArticleCategoryMetadata implements DomainMetadata {
 	public String mesureUnitIdKey(){
 		return "mesureunitid";
 	}		
+	
+	public String moduleIdKey(){
+		return "moduleid";
+	}	
 }

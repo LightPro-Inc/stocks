@@ -1,24 +1,20 @@
 package com.stocks.domains.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.Horodate;
-import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainStore;
 import com.securities.api.MesureUnit;
 import com.securities.impl.MesureUnitImpl;
-import com.stocks.domains.api.ArticleFamily;
-import com.stocks.domains.api.ArticleFamilyMetadata;
 import com.stocks.domains.api.ArticleCategory;
 import com.stocks.domains.api.ArticleCategoryMetadata;
+import com.stocks.domains.api.ArticleFamiliesByCategory;
+import com.stocks.domains.api.Stocks;
 
 public class ArticleCategoryImpl implements ArticleCategory {
 
@@ -69,23 +65,8 @@ public class ArticleCategoryImpl implements ArticleCategory {
 	}
 
 	@Override
-	public List<ArticleFamily> families() throws IOException {
-		
-		List<ArticleFamily> values = new ArrayList<ArticleFamily>();
-			
-		ArticleFamilyMetadata articleFamilydm = ArticleFamilyImpl.dm();
-		HorodateMetadata hm = HorodateImpl.dm();
-		String statement = String.format("SELECT %s FROM %s WHERE %s = ? ORDER BY %s DESC", articleFamilydm.keyName(), articleFamilydm.domainName(), articleFamilydm.categoryIdKey(), hm.dateCreatedKey());
-		
-		List<Object> params = new ArrayList<Object>();
-		params.add(this.id);
-		
-		List<DomainStore> results = base.domainsStore(dm).findDs(statement, params);
-		for (DomainStore domainStore : results) {
-			values.add(new ArticleFamilyImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
-		}		
-		
-		return values;
+	public ArticleFamiliesByCategory families() throws IOException {
+		return new ArticleFamiliesImpl(base, this);
 	}
 
 	@Override
@@ -110,5 +91,11 @@ public class ArticleCategoryImpl implements ArticleCategory {
 	@Override
 	public boolean isNotEqual(ArticleCategory item) {
 		return !isEqual(item);
+	}
+
+	@Override
+	public Stocks module() throws IOException {
+		UUID moduleId = ds.get(dm.moduleIdKey());
+		return new StocksImpl(base, moduleId);
 	}
 }

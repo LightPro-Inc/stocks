@@ -1,7 +1,6 @@
 package com.lightpro.stocks.rs;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -26,6 +25,8 @@ import com.lightpro.stocks.vm.ArticleStocksVm;
 import com.lightpro.stocks.vm.LocationVm;
 import com.lightpro.stocks.vm.OperationTypeVm;
 import com.lightpro.stocks.vm.WarehouseVm;
+import com.securities.api.Secured;
+import com.securities.api.Sequence;
 import com.stocks.domains.api.Location;
 import com.stocks.domains.api.OperationTypes;
 import com.stocks.domains.api.Warehouse;
@@ -35,6 +36,7 @@ import com.stocks.domains.api.Warehouses;
 public class WarehouseRs extends StocksBaseRs {
 	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAll() throws IOException {	
 		
@@ -54,6 +56,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @QueryParam("page") int page, 
@@ -81,6 +84,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingle(@PathParam("id") UUID id) throws IOException {	
@@ -98,6 +102,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response add(final WarehouseEdited cmd) throws IOException {
 		
@@ -114,6 +119,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("id") final UUID id, final WarehouseEdited cmd) throws IOException {
@@ -132,6 +138,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response delete(@PathParam("id") final UUID id) throws IOException {
@@ -151,6 +158,7 @@ public class WarehouseRs extends StocksBaseRs {
 	
 	// locations	
 	@GET
+	@Secured
 	@Path("/{id}/location/internal")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getInternalLocations(@PathParam("id") final UUID id) throws IOException {	
@@ -160,7 +168,7 @@ public class WarehouseRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<LocationVm> items = stocks().warehouses().get(id).locations().all()
+						List<LocationVm> items = stocks().warehouses().get(id).locations().internals()
 													 .stream()
 											 		 .map(m -> new LocationVm(m))
 											 		 .collect(Collectors.toList());
@@ -171,6 +179,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/location/all")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllLocations(@PathParam("id") final UUID id) throws IOException {	
@@ -180,14 +189,9 @@ public class WarehouseRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						List<Location> locations = new ArrayList<Location>();
-						for (Location location : stocks().locations().all()) {
-							if(location.warehouse().id() == null || location.warehouse().id().equals(id)){
-								locations.add(location);
-							}
-						}
-						
-						List<LocationVm> items = locations.stream()
+						List<LocationVm> items = stocks().warehouses().get(id)
+													 .locations().all()
+													 .stream()
 											 		 .map(m -> new LocationVm(m))
 											 		 .collect(Collectors.toList());
 
@@ -197,6 +201,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/location")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response addLocation(@PathParam("id") final UUID id, final LocationEdited cmd) throws IOException {
@@ -216,6 +221,7 @@ public class WarehouseRs extends StocksBaseRs {
 	
 	// type d'opérations
 	@GET
+	@Secured
 	@Path("/{id}/operation-type")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllOperationType(@PathParam("id") final UUID id) throws IOException {	
@@ -236,6 +242,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}/operation-type/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @PathParam("id") final UUID id,
@@ -264,6 +271,7 @@ public class WarehouseRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/operation-type")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response addOperationType(@PathParam("id") final UUID id, final OperationTypeEdited cmd) throws IOException {
@@ -273,7 +281,13 @@ public class WarehouseRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						stocks().warehouses().get(id).addOperationType(cmd.name(), cmd.defaultSourceLocationId(), cmd.defaultDestinationLocationId(), cmd.categoryId(), cmd.sequenceId());
+						Warehouse warehouse = stocks().warehouses().get(id);
+						
+						Location source = warehouse.locations().get(cmd.defaultSourceLocationId());
+						Location destination = warehouse.locations().get(cmd.defaultDestinationLocationId());
+						Sequence sequence = stocks().company().sequences().get(cmd.sequenceId());
+						
+						stocks().warehouses().get(id).addOperationType(cmd.name(), source, destination, cmd.category(), sequence);
 						
 						return Response.status(Response.Status.OK).build();
 					}
@@ -282,6 +296,7 @@ public class WarehouseRs extends StocksBaseRs {
 	
 	// stocks
 	@GET
+	@Secured
 	@Path("/{id}/stock")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllStocks(@PathParam("id") final UUID id) throws IOException {	

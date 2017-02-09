@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.stocks.domains.api.OperationCategory;
 
 public class OperationTypeEdited {
 
@@ -11,7 +12,7 @@ public class OperationTypeEdited {
 	private final String name;
 	private final UUID defaultSourceLocationId;
 	private final UUID defaultDestinationLocationId;
-	private final String categoryId;
+	private final OperationCategory categoryId;
 	private final UUID sequenceId;
 	
 	public OperationTypeEdited(){
@@ -23,14 +24,14 @@ public class OperationTypeEdited {
 					    	   @JsonProperty("name") final String name, 
 					    	   @JsonProperty("defaultSourceLocationId") final UUID defaultSourceLocationId,
 					    	   @JsonProperty("defaultDestinationLocationId") final UUID defaultDestinationLocationId,
-					    	   @JsonProperty("categoryId") final String categoryId,
+					    	   @JsonProperty("categoryId") final int categoryId,
 					    	   @JsonProperty("sequenceId") final UUID sequenceId){
 		
 		this.id = id;
 		this.name = name;
 		this.defaultSourceLocationId = defaultSourceLocationId;
 		this.defaultDestinationLocationId = defaultDestinationLocationId;
-		this.categoryId = categoryId;
+		this.categoryId = OperationCategory.get(categoryId);
 		this.sequenceId = sequenceId;
 	}
 	
@@ -50,7 +51,7 @@ public class OperationTypeEdited {
 		return defaultDestinationLocationId;
 	}
 	
-	public String categoryId(){
+	public OperationCategory category(){
 		return categoryId;
 	}
 	

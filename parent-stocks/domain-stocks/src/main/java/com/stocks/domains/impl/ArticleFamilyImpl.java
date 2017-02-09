@@ -1,23 +1,18 @@
 package com.stocks.domains.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.Horodate;
-import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainStore;
-import com.stocks.domains.api.Article;
 import com.stocks.domains.api.ArticleFamily;
 import com.stocks.domains.api.ArticleFamilyMetadata;
 import com.stocks.domains.api.ArticleCategory;
-import com.stocks.domains.api.ArticleMetadata;
+import com.stocks.domains.api.ArticlesByFamily;
 
 public class ArticleFamilyImpl implements ArticleFamily {
 
@@ -51,47 +46,27 @@ public class ArticleFamilyImpl implements ArticleFamily {
 	@Override
 	public ArticleCategory category() throws IOException {
 		UUID categoryId = ds.get(dm.categoryIdKey());
-		
-		return new ArticleCategoryImpl(this.base, categoryId);
+		return new ArticleCategoryImpl(base, categoryId);
 	}
 
 	@Override
-	public void update(String name, String description, UUID categoryId) throws IOException {
+	public void update(String name, String description) throws IOException {
 		
 		if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid name : it can't be empty!");
         }
 		
-		if (categoryId == null) {
-            throw new IllegalArgumentException("Invalid article category : it can't be empty!");
-        }
-		
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(dm.nameKey(), name);
 		params.put(dm.descriptionKey(), description);
-		params.put(dm.categoryIdKey(), categoryId);
+		params.put(dm.categoryIdKey(), category().id());
 		
 		ds.set(params);			
 	}
 
 	@Override
-	public List<Article> articles() throws IOException {
-		
-		List<Article> values = new ArrayList<Article>();
-		
-		HorodateMetadata hm = HorodateImpl.dm();
-		ArticleMetadata articledm = ArticleImpl.dm();
-		String statement = String.format("SELECT %s FROM %s WHERE %s = ? ORDER BY %s DESC", articledm.keyName(), articledm.domainName(), articledm.familyIdKey(), hm.dateCreatedKey());
-		
-		List<Object> params = new ArrayList<Object>();
-		params.add(this.id);
-		
-		List<DomainStore> results = base.domainsStore(dm).findDs(statement, params);
-		for (DomainStore domainStore : results) {
-			values.add(new ArticleImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
-		}		
-		
-		return values;		
+	public ArticlesByFamily articles() throws IOException {
+		return new ArticlesImpl(base, this);		
 	}
 
 	@Override

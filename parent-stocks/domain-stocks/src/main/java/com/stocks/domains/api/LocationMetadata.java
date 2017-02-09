@@ -44,6 +44,10 @@ public class LocationMetadata implements DomainMetadata {
 	}
 	
 	public String typeKey(){
-		return "locationtypeid";
+		return "typeid";
+	}
+	
+	public String moduleIdKey(){
+		return "moduleid";
 	}
 }

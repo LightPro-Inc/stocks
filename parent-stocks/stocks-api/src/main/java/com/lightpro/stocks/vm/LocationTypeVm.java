@@ -18,12 +18,12 @@ public class LocationTypeVm {
     }
 	
 	@JsonGetter
-	public String getId(){
+	public int getId(){
 		return origin.id();
 	}
 	
 	@JsonGetter
 	public String getName() throws IOException {
-		return origin.name();
+		return origin.toString();
 	}	
 }

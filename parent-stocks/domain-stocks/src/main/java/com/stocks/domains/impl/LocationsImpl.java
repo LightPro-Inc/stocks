@@ -16,17 +16,20 @@ import com.infrastructure.datasource.DomainsStore;
 import com.stocks.domains.api.Location;
 import com.stocks.domains.api.LocationMetadata;
 import com.stocks.domains.api.Locations;
+import com.stocks.domains.api.Stocks;
 
 public class LocationsImpl implements Locations {
 
 	private final transient Base base;
 	private final transient LocationMetadata dm;
 	private final transient DomainsStore ds;
+	private final transient Stocks module;
 	
-	public LocationsImpl(final Base base){
+	public LocationsImpl(final Base base, final Stocks module){
 		this.base = base;
 		this.dm = LocationImpl.dm();
 		this.ds = base.domainsStore(dm);
+		this.module = module;
 	}
 	
 	@Override
@@ -35,9 +38,15 @@ public class LocationsImpl implements Locations {
 		
 		HorodateMetadata hm = HorodateImpl.dm();
 		LocationMetadata locationdm = LocationImpl.dm();
-		String statement = String.format("SELECT %s FROM %s ORDER BY %s ASC", locationdm.keyName(), locationdm.domainName(), hm.dateCreatedKey());
+		String statement = String.format("SELECT %s FROM %s "
+				+ "WHERE %s=? "
+				+ "ORDER BY %s ASC", 
+				locationdm.keyName(), locationdm.domainName(), 
+				locationdm.moduleIdKey(), 
+				hm.dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
+		params.add(module.id());
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
@@ -53,7 +62,7 @@ public class LocationsImpl implements Locations {
 		List<Location> internals = new ArrayList<Location>();
 		
 		for (Location lt : all) {
-			if(!(lt.warehouse().id() == null))
+			if(lt.isInternal())
 				internals.add(lt);
 		}
 		
@@ -63,22 +72,27 @@ public class LocationsImpl implements Locations {
 	@Override
 	public Location get(UUID id) throws IOException {
 		Location item = getOrDefault(id);
+		
 		if(item == null)
 			throw new NotFoundException("L'emplacement n'a pas été trouvé !");
 		
-		return new LocationImpl(this.base, id);
+		return item; 
 	}
 
 	@Override
 	public Location getOrDefault(UUID id) throws IOException {
-		if(!ds.exists(id))
+		Location item = new LocationImpl(this.base, id);
+		
+		if(!item.isPresent() || item.module().isNotEqual(module))
 			return null;
 		
-		return new LocationImpl(this.base, id);
+		return item;
 	}
 
 	@Override
-	public void delete(Location location) throws IOException {
-		ds.delete(location.id());
+	public void delete(Location item) throws IOException {
+		
+		if(item.isPresent() && item.module().isEqual(module))
+			ds.delete(item.id());
 	}
 }

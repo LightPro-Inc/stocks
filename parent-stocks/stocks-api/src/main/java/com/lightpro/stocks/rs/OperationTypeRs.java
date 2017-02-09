@@ -23,15 +23,19 @@ import com.lightpro.stocks.cmd.OperationTypeEdited;
 import com.lightpro.stocks.cmd.StockMovementEdited;
 import com.lightpro.stocks.vm.OperationTypeVm;
 import com.lightpro.stocks.vm.OperationVm;
+import com.securities.api.Secured;
+import com.securities.api.Sequence;
 import com.stocks.domains.api.Article;
+import com.stocks.domains.api.Location;
 import com.stocks.domains.api.Operation;
 import com.stocks.domains.api.OperationType;
 import com.stocks.domains.api.OperationTypes;
 
 @Path("/operation-type")
 public class OperationTypeRs extends StocksBaseRs {
-
+	
 	@GET
+	@Secured
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAll() throws IOException {	
 		
@@ -51,6 +55,7 @@ public class OperationTypeRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @QueryParam("page") int page, 
@@ -78,6 +83,7 @@ public class OperationTypeRs extends StocksBaseRs {
 	}
 	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingle(@PathParam("id") UUID id) throws IOException {	
@@ -95,6 +101,7 @@ public class OperationTypeRs extends StocksBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response update(@PathParam("id") final UUID id, final OperationTypeEdited cmd) throws IOException {
@@ -105,7 +112,11 @@ public class OperationTypeRs extends StocksBaseRs {
 					public Response call() throws IOException {
 						
 						OperationType item = stocks().operationTypes().get(cmd.id());
-						item.update(cmd.name(), cmd.defaultSourceLocationId(), cmd.defaultDestinationLocationId(), cmd.categoryId(), cmd.sequenceId());
+						Location source = stocks().locations().get(cmd.defaultSourceLocationId());
+						Location destination = stocks().locations().get(cmd.defaultDestinationLocationId());
+						Sequence sequence = stocks().company().sequences().get(cmd.sequenceId());
+						
+						item.update(cmd.name(), source, destination, cmd.category(), sequence);
 						
 						return Response.status(Response.Status.OK).build();
 					}
@@ -113,6 +124,7 @@ public class OperationTypeRs extends StocksBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response delete(@PathParam("id") final UUID id) throws IOException {
@@ -132,6 +144,7 @@ public class OperationTypeRs extends StocksBaseRs {
 	
 	// opération
 	@GET
+	@Secured
 	@Path("{id}/operation/unfinished")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getAllOperations(@PathParam("id") UUID id) throws IOException {	
@@ -152,6 +165,7 @@ public class OperationTypeRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/operation")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response add(@PathParam("id") final UUID id, final OperationEdited cmd) throws IOException {

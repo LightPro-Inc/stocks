@@ -59,13 +59,13 @@ public class OperationTypeVm {
 	}	
 	
 	@JsonGetter
-	public String getCategoryId() throws IOException {
+	public int getCategoryId() throws IOException {
 		return origin.category().id();
 	}	
 	
 	@JsonGetter
 	public String getCategory() throws IOException {
-		return origin.category().name();
+		return origin.category().toString();
 	}	
 	
 	@JsonGetter

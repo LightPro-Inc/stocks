@@ -14,12 +14,14 @@ import javax.ws.rs.core.Response;
 
 import com.infrastructure.core.PaginationSet;
 import com.lightpro.stocks.vm.StockMovementVm;
+import com.securities.api.Secured;
 import com.stocks.domains.api.StockMovements;
 
 @Path("/stock-movement")
 public class StockMovementRs extends StocksBaseRs {
 	
 	@GET
+	@Secured
 	@Path("/search")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response search( @QueryParam("page") int page, 

@@ -43,7 +43,7 @@ public class LocationVm {
 	}
 	
 	@JsonGetter
-	public String getTypeId() throws IOException {
+	public int getTypeId() throws IOException {
 		return origin.type().id();
 	}
 	

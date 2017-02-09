@@ -14,6 +14,7 @@ import com.stocks.domains.api.ArticleFamily;
 import com.stocks.domains.api.ArticleMetadata;
 import com.stocks.domains.api.ArticlePlannings;
 import com.stocks.domains.api.ArticleStocks;
+import com.stocks.domains.api.Warehouse;
 
 public class ArticleImpl implements Article {
 
@@ -56,8 +57,8 @@ public class ArticleImpl implements Article {
 
 	@Override
 	public ArticleFamily family() throws IOException {
-		UUID familyId = ds.get(dm.familyIdKey());		
-		return new ArticleFamilyImpl(this.base, familyId);
+		UUID familyId = ds.get(dm.familyIdKey());
+		return new ArticleFamilyImpl(base, familyId);
 	}
 
 	@Override
@@ -66,14 +67,10 @@ public class ArticleImpl implements Article {
 	}
 
 	@Override
-	public void update(String name, String internalReference, String barCode, int quantity, double cost, String description, UUID familyId) throws IOException {
+	public void update(String name, String internalReference, String barCode, int quantity, double cost, String description) throws IOException {
 		
 		if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Invalid name : it can't be empty!");
-        }
-		
-		if (familyId == null) {
-            throw new IllegalArgumentException("Invalid article family : it can't be empty!");
         }
 		
 		Map<String, Object> params = new HashMap<String, Object>();
@@ -82,7 +79,7 @@ public class ArticleImpl implements Article {
 		params.put(dm.quantityKey(), quantity);		
 		params.put(dm.costKey(), cost);		
 		params.put(dm.descriptionKey(), description);
-		params.put(dm.familyIdKey(), familyId);
+		params.put(dm.familyIdKey(), family().id());
 		params.put(dm.barCodeKey(), barCode);
 		
 		ds.set(params);					
@@ -104,12 +101,12 @@ public class ArticleImpl implements Article {
 
 	@Override
 	public ArticlePlannings plannings() throws IOException {
-		return new ArticlePlanningsImpl(this.base, this.id);
+		return new ArticlePlanningsImpl(this.base, this);
 	}
 
 	@Override
-	public ArticleStocks stocks() throws IOException {
-		return new ArticleStocksImpl(this.base, this.id);
+	public ArticleStocks stocks(final Warehouse warehouse) throws IOException {
+		return new ArticleStocksImpl(this.base, this, warehouse);
 	}
 
 	@Override

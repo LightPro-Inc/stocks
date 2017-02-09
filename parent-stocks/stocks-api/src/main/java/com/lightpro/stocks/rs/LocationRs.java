@@ -1,10 +1,8 @@
 package com.lightpro.stocks.rs;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,31 +17,15 @@ import javax.ws.rs.core.Response;
 import com.lightpro.stocks.cmd.ActivateLocationCmd;
 import com.lightpro.stocks.cmd.LocationEdited;
 import com.lightpro.stocks.vm.LocationVm;
+import com.securities.api.Secured;
 import com.stocks.domains.api.Location;
+import com.stocks.domains.api.Locations;
 
 @Path("/location")
 public class LocationRs extends StocksBaseRs {
-	
-	@GET
-	@Produces({MediaType.APPLICATION_JSON})
-	public Response getAll() throws IOException {	
-		
-		return createHttpResponse(
-				new Callable<Response>(){
-					@Override
-					public Response call() throws IOException {
-						
-						List<LocationVm> items = stocks().locations().all()
-													 .stream()
-											 		 .map(m -> new LocationVm(m))
-											 		 .collect(Collectors.toList());
 
-						return Response.ok(items).build();
-					}
-				});			
-	}
-	
 	@GET
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response getSingleLocation(@PathParam("id") UUID id) throws IOException {	
@@ -61,6 +43,7 @@ public class LocationRs extends StocksBaseRs {
 	}
 	
 	@POST
+	@Secured
 	@Path("/{id}/activate")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response activateLocation(@PathParam("id") final UUID id, final ActivateLocationCmd cmd) throws IOException {
@@ -80,6 +63,7 @@ public class LocationRs extends StocksBaseRs {
 	}
 	
 	@PUT
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response updateLocation(@PathParam("id") final UUID id, final LocationEdited cmd) throws IOException {
@@ -98,6 +82,7 @@ public class LocationRs extends StocksBaseRs {
 	}
 	
 	@DELETE
+	@Secured
 	@Path("/{id}")
 	@Produces({MediaType.APPLICATION_JSON})
 	public Response deleteLocation(@PathParam("id") final UUID id) throws IOException {
@@ -107,8 +92,9 @@ public class LocationRs extends StocksBaseRs {
 					@Override
 					public Response call() throws IOException {
 						
-						Location item = stocks().locations().get(id);						
-						stocks().locations().delete(item);
+						Locations locations = stocks().locations();
+						Location item = locations.get(id);						
+						locations.delete(item);
 						
 						return Response.status(Response.Status.OK).build();
 					}

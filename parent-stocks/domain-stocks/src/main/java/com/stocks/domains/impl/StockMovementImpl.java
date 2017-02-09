@@ -3,7 +3,6 @@ package com.stocks.domains.impl;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.Horodate;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
@@ -18,11 +17,11 @@ import com.stocks.domains.api.StockMovementMetadata;
 public class StockMovementImpl implements StockMovement {
 
 	private final transient Base base;
-	private final transient Object id;
+	private final transient UUID id;
 	private final transient StockMovementMetadata dm;
 	private final transient DomainStore ds;
 	
-	public StockMovementImpl(final Base base, final Object id){
+	public StockMovementImpl(final Base base, final UUID id){
 		this.base = base;
 		this.id = id;
 		this.dm = dm();
@@ -31,7 +30,7 @@ public class StockMovementImpl implements StockMovement {
 	
 	@Override
 	public UUID id() {
-		return UUIDConvert.fromObject(this.id);
+		return this.id;
 	}
 
 	@Override
@@ -52,7 +51,7 @@ public class StockMovementImpl implements StockMovement {
 	@Override
 	public Article article() throws IOException {
 		UUID articleId = ds.get(dm.articleIdKey());
-		return new ArticleImpl(this.base, articleId);
+		return new ArticleImpl(base, articleId);
 	}
 
 	@Override
@@ -85,7 +84,7 @@ public class StockMovementImpl implements StockMovement {
 		
 		if(source.isInternal())
 		{
-			ArticleStock stock = this.article().stocks().get(source);
+			ArticleStock stock = this.article().stocks(source.warehouse()).get(source);
 			double quantity = stock.quantity() - this.quantity();
 			
 			if(quantity < 0)
@@ -95,7 +94,7 @@ public class StockMovementImpl implements StockMovement {
 		}
 		
 		if(destination.isInternal()){
-			ArticleStock stock = this.article().stocks().get(destination);
+			ArticleStock stock = this.article().stocks(destination.warehouse()).get(destination);
 			stock.updateQuantity(stock.quantity() + this.quantity());
 		}
 	}

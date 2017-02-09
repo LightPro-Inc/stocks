@@ -12,24 +12,25 @@ import com.stocks.domains.api.ArticlePlanning;
 import com.stocks.domains.api.ArticleStock;
 import com.stocks.domains.api.ArticleStockMetadata;
 import com.stocks.domains.api.Location;
+import com.stocks.domains.api.Warehouse;
 
 public class ArticleStockImpl implements ArticleStock {
 
 	private final transient Base base;
-	private final transient UUID id;
 	private final transient ArticleStockMetadata dm;
 	private final transient DomainStore ds;
+	private final transient ArticlePlanning planning;
 	
-	public ArticleStockImpl(final Base base, final UUID id){
+	public ArticleStockImpl(final Base base, final ArticlePlanning planning){
 		this.base = base;
-		this.id = id;
+		this.planning = planning;
 		this.dm = dm();
-		this.ds = this.base.domainsStore(this.dm).createDs(id);	
+		this.ds = this.base.domainsStore(this.dm).createDs(planning.id());	
 	}
 	
 	@Override
 	public UUID id() {
-		return this.id;
+		return planning.id();
 	}
 
 	@Override
@@ -85,13 +86,13 @@ public class ArticleStockImpl implements ArticleStock {
 	}
 
 	@Override
-	public ArticlePlanning planning() throws IOException {
-		return new ArticlePlanningImpl(this.base, id);
+	public ArticlePlanning planning() {
+		return planning;
 	}
 
 	@Override
 	public boolean isPresent(){
-		return base.domainsStore(dm).exists(id);
+		return base.domainsStore(dm).exists(planning.id());
 	}
 	
 	@Override
@@ -102,5 +103,10 @@ public class ArticleStockImpl implements ArticleStock {
 	@Override
 	public boolean isNotEqual(ArticleStock item) {
 		return !isEqual(item);
+	}
+
+	@Override
+	public Warehouse warehouse() throws IOException {
+		return location().warehouse();
 	}
 }

@@ -15,6 +15,7 @@ import com.stocks.domains.api.ArticleStock;
 import com.stocks.domains.api.ArticleStockMetadata;
 import com.stocks.domains.api.ArticleStocks;
 import com.stocks.domains.api.Location;
+import com.stocks.domains.api.Warehouse;
 
 public class ArticleStocksImpl implements ArticleStocks {
 
@@ -22,24 +23,26 @@ public class ArticleStocksImpl implements ArticleStocks {
 	private final transient ArticleStockMetadata dm;
 	private final transient Article article;
 	private final transient DomainsStore ds;
+	private final transient Warehouse warehouse;
 	
-	public ArticleStocksImpl(final Base base, final UUID articleId){
+	public ArticleStocksImpl(final Base base, final Article article, final Warehouse warehouse){
 		this.base = base;
-		this.article = new ArticleImpl(this.base, articleId);
+		this.article = article;
 		this.dm = ArticleStockImpl.dm();
 		this.ds = this.base.domainsStore(this.dm);	
+		this.warehouse = warehouse;
 	}
 
 	@Override
 	public ArticleStock get(UUID id) throws IOException {
-		ArticleStock stock = new ArticleStockImpl(this.base, id);
+		ArticleStock stock = new ArticleStockImpl(this.base, article.plannings().get(id));
 		
 		if(!stock.isPresent())
 		{
 			Location location = article.plannings().get(id).location();
 			stock = get(location);
 		}
-		
+					
 		return stock;
 	}
 
@@ -50,18 +53,17 @@ public class ArticleStocksImpl implements ArticleStocks {
 		if(!ds.exists(planning.id()))
 			add(location);
 		
-		return new ArticleStockImpl(this.base, planning.id());
+		return new ArticleStockImpl(this.base, planning);
 	}
 
 	@Override
 	public List<ArticleStock> all() throws IOException {
 		List<ArticleStock> items = new ArrayList<ArticleStock>();
 		
-		List<Location> locations = new LocationsImpl(this.base).internals();
-		for (Location location : locations) {
+		for (Location location : warehouse.locations().internals()) {
 			items.add(get(location));			
 		}
-		
+				
 		return items;
 	}
 
@@ -70,15 +72,10 @@ public class ArticleStocksImpl implements ArticleStocks {
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put(dm.quantityKey(), 0);
 		
-		ArticlePlanning planning = new ArticleImpl(this.base, article.id()).plannings().get(location);
+		ArticlePlanning planning = article.plannings().get(location);
 		ds.set(planning.id(), params);
 		
-		return new ArticleStockImpl(this.base, planning.id());
-	}
-
-	@Override
-	public Article article() {
-		return article;
+		return new ArticleStockImpl(this.base, planning);
 	}
 
 	@Override
@@ -90,5 +87,10 @@ public class ArticleStocksImpl implements ArticleStocks {
 		}
 		
 		return count;
+	}
+
+	@Override
+	public Article article() throws IOException {
+		return article;
 	}
 }

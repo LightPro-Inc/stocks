@@ -16,17 +16,21 @@ import com.infrastructure.datasource.DomainsStore;
 import com.stocks.domains.api.OperationType;
 import com.stocks.domains.api.OperationTypeMetadata;
 import com.stocks.domains.api.OperationTypes;
+import com.stocks.domains.api.Stocks;
+import com.stocks.domains.api.WarehouseMetadata;
 
 public class OperationTypesImpl implements OperationTypes {
 
 	private final transient Base base;
 	private final transient OperationTypeMetadata dm;
 	private final transient DomainsStore ds;
+	private final transient Stocks module;
 	
-	public OperationTypesImpl(final Base base){
+	public OperationTypesImpl(final Base base, final Stocks module){
 		this.base = base;
 		this.dm = OperationTypeImpl.dm();
 		this.ds = base.domainsStore(dm);
+		this.module = module;
 	}
 	
 	@Override
@@ -44,11 +48,20 @@ public class OperationTypesImpl implements OperationTypes {
 		List<OperationType> values = new ArrayList<OperationType>();
 		
 		HorodateMetadata hm = HorodateImpl.dm();
-		String statement = String.format("SELECT %s FROM %s WHERE %s ILIKE ? ORDER BY %s DESC LIMIT ? OFFSET ?", dm.keyName(), dm.domainName(), dm.nameKey(), hm.dateCreatedKey());
+		WarehouseMetadata dmWh = WarehouseImpl.dm();
+		String statement = String.format("SELECT ot.%s FROM %s ot "
+				+ "JOIN %s wh ON wh.%s=ot.%s "
+				+ "WHERE ot.%s ILIKE ? AND wh.%s=? "
+				+ "ORDER BY ot.%s DESC LIMIT ? OFFSET ?", 
+				dm.keyName(), dm.domainName(), 
+				dmWh.domainName(), dmWh.keyName(), dm.warehouseIdKey(),
+				dm.nameKey(), dmWh.moduleIdKey(), 
+				hm.dateCreatedKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		if(pageSize > 0){
 			params.add(pageSize);
@@ -68,11 +81,19 @@ public class OperationTypesImpl implements OperationTypes {
 
 	@Override
 	public int totalCount(String filter) throws IOException {
-		String statement = String.format("SELECT COUNT(%s) FROM %s WHERE %s ILIKE ?", dm.keyName(), dm.domainName(), dm.nameKey());
+		
+		WarehouseMetadata dmWh = WarehouseImpl.dm();
+		String statement = String.format("SELECT COUNT(ot.%s) FROM %s ot "
+				+ "JOIN %s wh ON wh.%s=ot.%s "
+				+ "WHERE ot.%s ILIKE ? AND wh.%s=? ",
+				dm.keyName(), dm.domainName(), 
+				dmWh.domainName(), dmWh.keyName(), dm.warehouseIdKey(),
+				dm.nameKey(), dmWh.moduleIdKey());
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
 		params.add("%" + filter + "%");
+		params.add(module.id());
 		
 		List<Object> results = ds.find(statement, params);
 		return Integer.parseInt(results.get(0).toString());	
@@ -80,31 +101,36 @@ public class OperationTypesImpl implements OperationTypes {
 
 	@Override
 	public OperationType get(UUID id) throws IOException {
-		if(!ds.exists(id))
+		
+		OperationType item = build(id);
+		
+		if(!contains(item))
 			throw new NotFoundException("Le type d'opération n'a pas été trouvé !");
 		
-		return new OperationTypeImpl(this.base, id);
+		return item;
 	}
 
 	@Override
 	public void delete(OperationType item) throws IOException {
-		ds.delete(item.id());
+		if(contains(item))
+		{
+			item.unfinishedOperations().deleteAll();
+			ds.delete(item.id());
+		}
 	}
 
 	@Override
 	public boolean contains(OperationType item) {
 		try {
-			get(item.id());
+			return item.isPresent() && item.warehouse().moduleStocks().isEqual(module);
 		} catch (IOException e) {
-			return false;
+			e.printStackTrace();
 		}
-		
-		return true;
+		return false;
 	}
 
 	@Override
 	public OperationType build(UUID id) {
 		return new OperationTypeImpl(base, id);
 	}
-
 }

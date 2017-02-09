@@ -7,11 +7,13 @@ import java.util.UUID;
 
 import javax.ws.rs.NotFoundException;
 
+import com.common.utilities.convert.UUIDConvert;
 import com.infrastructure.core.HorodateMetadata;
 import com.infrastructure.core.impl.HorodateImpl;
 import com.infrastructure.datasource.Base;
 import com.infrastructure.datasource.DomainStore;
 import com.infrastructure.datasource.DomainsStore;
+import com.stocks.domains.api.Operation;
 import com.stocks.domains.api.OperationMetadata;
 import com.stocks.domains.api.StockMovement;
 import com.stocks.domains.api.StockMovementMetadata;
@@ -21,11 +23,11 @@ public class OperationMovements implements StockMovements {
 
 	private transient final Base base;
 	private final transient StockMovementMetadata dm;
-	private final transient Object operationId;
+	private final transient Operation operation;
 	private final transient DomainsStore ds;
 	
-	public OperationMovements(final Base base, Object operationId){
-		this.operationId = operationId;
+	public OperationMovements(final Base base, final Operation operation){
+		this.operation = operation;
 		this.base = base;
 		this.dm = StockMovementImpl.dm();
 		this.ds = this.base.domainsStore(this.dm);	
@@ -51,7 +53,7 @@ public class OperationMovements implements StockMovements {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.operationId);
+		params.add(this.operation.id());
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
 		
@@ -65,7 +67,7 @@ public class OperationMovements implements StockMovements {
 		
 		List<DomainStore> results = ds.findDs(statement, params);
 		for (DomainStore domainStore : results) {
-			values.add(new StockMovementImpl(this.base, domainStore.key())); 
+			values.add(new StockMovementImpl(this.base, UUIDConvert.fromObject(domainStore.key()))); 
 		}		
 		
 		return values;
@@ -78,7 +80,7 @@ public class OperationMovements implements StockMovements {
 		
 		List<Object> params = new ArrayList<Object>();
 		filter = (filter == null) ? "" : filter;
-		params.add(this.operationId);
+		params.add(this.operation.id());
 		params.add("%" + filter + "%");
 		params.add("%" + filter + "%");
 		
@@ -90,7 +92,7 @@ public class OperationMovements implements StockMovements {
 	public StockMovement get(UUID id) throws IOException {
 		StockMovement item = new StockMovementImpl(this.base, id);
 		
-		if(!item.isPresent() || (item.isPresent() && !item.operation().id().equals(this.operationId)))
+		if(!contains(item))
 			throw new NotFoundException("L'article n'a pas été trouvé !");
 		
 		return item;
@@ -105,12 +107,11 @@ public class OperationMovements implements StockMovements {
 	@Override
 	public boolean contains(StockMovement item) {
 		try {
-			get(item.id());
-		} catch (Exception e) {
-			return false;
+			return item.isPresent() && item.operation().isEqual(operation);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-		return true;
+		return false;
 	}
 
 	@Override
