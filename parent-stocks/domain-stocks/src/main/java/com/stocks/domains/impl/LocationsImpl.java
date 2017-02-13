@@ -95,4 +95,11 @@ public class LocationsImpl implements Locations {
 		if(item.isPresent() && item.module().isEqual(module))
 			ds.delete(item.id());
 	}
+
+	@Override
+	public void deleteAll() throws IOException {
+		for (Location location : all()) {
+			delete(location);
+		}
+	}
 }

@@ -108,4 +108,11 @@ public class WarehouseLocationsImpl implements Locations {
 		else
 			return null;
 	}
+	
+	@Override
+	public void deleteAll() throws IOException {
+		for (Location location : internals()) {
+			delete(location);
+		}
+	}
 }

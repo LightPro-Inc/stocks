@@ -117,4 +117,11 @@ public class WarehouseOperationTypes implements OperationTypes {
 	public OperationType build(UUID id) {
 		return new OperationTypeImpl(base, id);
 	}
+
+	@Override
+	public void deleteAll() throws IOException {
+		for (OperationType type : all()) {
+			delete(type);
+		}
+	}
 }

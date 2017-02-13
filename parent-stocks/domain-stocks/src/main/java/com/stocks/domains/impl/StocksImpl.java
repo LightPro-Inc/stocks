@@ -171,4 +171,14 @@ public class StocksImpl implements Stocks {
 	public Sequences sequences() throws IOException {
 		return company().sequences();
 	}
+
+	@Override
+	public void activate(boolean active) throws IOException {
+		origin.activate(active);
+	}
+
+	@Override
+	public boolean isActive() {
+		return origin.isActive();
+	}
 }

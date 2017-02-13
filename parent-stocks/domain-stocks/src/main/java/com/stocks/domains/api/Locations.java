@@ -10,4 +10,5 @@ public interface Locations {
 	Location get(UUID id) throws IOException;
 	Location getOrDefault(UUID id) throws IOException;
 	void delete(Location location) throws IOException;
+	void deleteAll() throws IOException;
 }

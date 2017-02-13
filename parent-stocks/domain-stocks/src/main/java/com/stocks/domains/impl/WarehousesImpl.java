@@ -116,6 +116,8 @@ public class WarehousesImpl implements Warehouses {
 
 	@Override
 	public void delete(Warehouse item) throws IOException {
+		item.operationTypes().deleteAll();
+		item.locations().deleteAll();		
 		ds.delete(item.id());
 	}
 
